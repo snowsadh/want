@@ -1,0 +1,31 @@
+[project]
+name = "want-experiments"
+version = "0.1.0"
+description = "Small measured spikes for WANT! clothing analysis, retrieval, and try-on"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "google-genai>=1.0",
+  "httpx>=0.28",
+  "pillow>=11.0",
+  "pydantic>=2.10",
+  "python-dotenv>=1.0",
+]
+
+[project.optional-dependencies]
+ranking = [
+  "numpy>=2.0",
+  "open-clip-torch>=3.0",
+  "torch>=2.7",
+]
+dev = [
+  "pytest>=8.3",
+  "ruff>=0.12",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
