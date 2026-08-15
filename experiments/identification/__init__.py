@@ -1,0 +1,1 @@
+"""Structured clothing identification experiments."""
