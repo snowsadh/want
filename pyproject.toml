@@ -1,22 +1,20 @@
 [project]
-name = "want-experiments"
+name = "want"
 version = "0.1.0"
-description = "Small measured spikes for WANT! clothing analysis, retrieval, and try-on"
+description = "WANT! Chrome extension and local API"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-  "google-genai>=1.0",
+  "fastapi>=0.116",
   "httpx>=0.28",
+  "openai>=3.1",
   "pillow>=11.0",
   "pydantic>=2.10",
   "python-dotenv>=1.0",
+  "python-multipart>=0.0.20",
+  "uvicorn[standard]>=0.35",
 ]
 
 [project.optional-dependencies]
-ranking = [
-  "numpy>=2.0",
-  "open-clip-torch>=3.0",
-  "torch>=2.7",
-]
 dev = [
   "pytest>=8.3",
   "ruff>=0.12",
@@ -28,4 +26,4 @@ target-version = "py312"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
+pythonpath = ["."]
