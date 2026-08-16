@@ -49,11 +49,12 @@ Do not add endpoints for the hackathon demo.
 
 ### End-to-end rehearsal
 
+- One clean capture-to-saved-YouCam run passed on 2026-08-17.
 - Upload the final demo full-body photo.
 - Run the chosen reference from capture through **Try this look** and Save.
 - Confirm the selected ranks—not merely rank one—reach YouCam and the saved look.
 - Confirm unsupported accessories remain links and are not labelled rendered.
-- Complete three consecutive clean runs inside 1–3 minutes.
+- Complete two more consecutive clean runs inside 1–3 minutes.
 
 ### Submission
 

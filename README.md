@@ -4,6 +4,22 @@ A private Chrome side-panel app that captures an outfit, finds current buyable
 matches, previews selected apparel on the user's photo, and saves the result
 locally.
 
+## How it works
+
+```text
+Chrome side panel
+    -> FastAPI receives the selected image
+    -> OpenAI inventories every visible wearable
+    -> one concurrent live shopping search runs per item
+    -> the user chooses one real product per row
+    -> YouCam Clothes V3 renders the supported selections
+    -> SQLite and local media store the private saved look
+```
+
+OpenAI handles understanding and live product discovery; it does not generate
+the try-on. YouCam Clothes V3 is the visible rendering step and receives the
+exact products selected in the side panel.
+
 ## Run locally
 
 Prerequisites: Python 3.12, `uv`, Node.js, `pnpm`, and Chrome 116 or newer.
@@ -61,6 +77,28 @@ uv run pytest -q
 pnpm typecheck
 pnpm build
 ```
+
+## Code map
+
+- `apps/extension/src/background.ts` opens the side panel, injects capture mode,
+  and stores a pending capture while the panel opens.
+- `apps/extension/src/content.ts` owns the on-page drag-selection overlay.
+- `apps/extension/src/sidepanel/capture.ts` turns the selected rectangle into a
+  crop, preferring the original page image when possible.
+- `apps/extension/src/sidepanel/main.tsx` contains the side-panel screens and
+  user flow; `api.ts` is its only backend client and `types.ts` mirrors the API.
+- `apps/api/app/main.py` wires the FastAPI routes and process-lifetime services.
+- `openai_discovery.py`, `openai_prompts.py`, and `look_builder.py` inventory,
+  search, normalize, crop, and assemble each product row.
+- `try_on.py` validates the chosen ranks and sequences supported garment regions
+  through `youcam.py`.
+- `database.py` and `media.py` store the local profile, saved snapshots, captures,
+  and final YouCam images.
+- `contracts.py` is the shared backend data contract; `tests/` protects API,
+  normalization, selection, and YouCam behavior.
+
+The detailed product boundary lives in `docs/product-spec.md`; the accepted
+agentic runtime and measured provider results live in `docs/agentic-plan.md`.
 
 Personal photos, captures, provider payloads, and generated images remain under
 ignored `private-input/` and `private-output/` directories. API keys are never
