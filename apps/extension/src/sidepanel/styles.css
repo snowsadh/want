@@ -82,7 +82,7 @@ h2 { font-size: 30px; font-weight: 670; line-height: 1; letter-spacing: -1.45px;
 .onboarding { display: flex; min-height: calc(100vh - 66px); flex-direction: column; }
 .onboarding-visual { position: relative; height: clamp(270px, 49vh, 420px); overflow: hidden; border: 1px solid rgb(23 24 32 / 10%); border-radius: 18px; background: #f0eee9; box-shadow: var(--shadow-md); clip-path: none; }
 .onboarding-visual::after { position: absolute; inset: 0; border: 1px solid rgb(255 255 255 / 55%); border-radius: inherit; content: ""; pointer-events: none; }
-.onboarding-visual img { width: 100%; height: 100%; object-fit: cover; }
+.onboarding-visual img { width: 100%; height: 100%; object-fit: contain; }
 .slide-number { position: absolute; right: 13px; bottom: 12px; display: grid; width: 34px; height: 34px; border: 1px solid rgb(255 255 255 / 55%); border-radius: 50%; place-items: center; color: #fff; background: rgb(23 24 32 / 72%); backdrop-filter: blur(6px); font-family: var(--font-mono); font-size: 9px; }
 .onboarding-copy { padding-top: 24px; }
 .onboarding-copy h1 { font-size: clamp(36px, 10vw, 46px); }
