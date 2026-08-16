@@ -1,0 +1,9 @@
+{
+  "name": "want-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.30.2",
+  "scripts": {
+    "build": "pnpm --filter @want/extension build",
+    "typecheck": "pnpm --filter @want/extension typecheck"
+  }
+}

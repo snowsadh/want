@@ -13,3 +13,8 @@ private-output/
 # Local model/download caches if redirected into the repository.
 .cache/
 
+# JavaScript dependencies and extension builds.
+node_modules/
+.pnpm-store/
+dist/
+*.tsbuildinfo

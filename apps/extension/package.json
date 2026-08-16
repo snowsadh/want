@@ -1,0 +1,27 @@
+{
+  "name": "@want/extension",
+  "version": "0.1.5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/space-mono": "^5.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.2.6",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}
