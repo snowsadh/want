@@ -1,0 +1,55 @@
+{
+  "manifest_version": 3,
+  "name": "WANT!",
+  "description": "Turn a look on your screen into a shoppable try-on.",
+  "version": "0.2.0",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "scripts": ["assets/background.js"],
+    "type": "module"
+  },
+  "sidebar_action": {
+    "default_panel": "sidepanel.html",
+    "default_title": "Open WANT!",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    },
+    "open_at_install": true
+  },
+  "action": {
+    "default_title": "Open WANT!",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+W",
+        "mac": "Alt+W"
+      }
+    }
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "want-youcam-vto@want.local",
+      "strict_min_version": "142.0",
+      "data_collection_permissions": {
+        "required": [
+          "browsingActivity",
+          "personallyIdentifyingInfo",
+          "websiteContent"
+        ]
+      }
+    }
+  }
+}

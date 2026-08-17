@@ -40,6 +40,24 @@ async def save_capture(upload: UploadFile, media_dir: Path, look_id: str) -> Sav
     return SavedImage(ref=f"/media/{relative.as_posix()}", path=destination)
 
 
+async def save_try_on_input(
+    upload: UploadFile,
+    media_dir: Path,
+    request_id: str,
+    name: str,
+    *,
+    min_side: int = 64,
+) -> SavedImage:
+    image = await read_uploaded_image(upload)
+    if min(image.size) < min_side or max(image.size) > 4096:
+        raise ValueError(f"Use an image between {min_side} px and 4096 px on each side")
+    relative = Path("try-on-inputs") / request_id / f"{name}.jpg"
+    destination = media_dir / relative
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    image.save(destination, "JPEG", quality=92, optimize=True)
+    return SavedImage(ref=f"/media/{relative.as_posix()}", path=destination)
+
+
 async def read_uploaded_image(upload: UploadFile) -> Image.Image:
     if upload.content_type not in ALLOWED_IMAGE_TYPES:
         raise ValueError("Use a JPEG or PNG image")

@@ -31,8 +31,9 @@ class TryOnManager:
         look: LookBuildResponse,
         profile_ref: str,
         selections: dict[str, int] | None = None,
+        reference_refs: dict[str, str] | None = None,
     ) -> TryOnJob:
-        steps = self._steps(look, selections or {})
+        steps = self._steps(look, selections or {}, reference_refs or {})
         if not steps:
             raise ValueError("This look has no matched apparel that Clothes V3 can render")
         job = TryOnJob(
@@ -133,8 +134,10 @@ class TryOnManager:
         self,
         look: LookBuildResponse,
         selections: dict[str, int] | None = None,
+        reference_refs: dict[str, str] | None = None,
     ) -> list[tuple[str, BodySlot, str]]:
         selections = selections or {}
+        reference_refs = reference_refs or {}
         rows = {item.item_id: item for item in look.result.items}
         unknown = set(selections) - set(rows)
         if unknown:
@@ -152,7 +155,9 @@ class TryOnManager:
             references.setdefault(garment.body_slot, []).append(
                 (
                     item_id,
-                    row.products[selected].image_ref or str(row.products[selected].image_url),
+                    reference_refs.get(item_id)
+                    or row.products[selected].image_ref
+                    or str(row.products[selected].image_url),
                     garment,
                 )
             )

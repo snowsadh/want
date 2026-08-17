@@ -1,7 +1,7 @@
 [project]
 name = "want"
-version = "0.1.0"
-description = "WANT! Chrome extension and local API"
+version = "0.2.0"
+description = "WANT! browser extension and hosted agentic shopping and try-on API"
 requires-python = ">=3.12,<3.13"
 dependencies = [
   "fastapi>=0.116",

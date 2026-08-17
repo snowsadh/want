@@ -14,6 +14,7 @@ import {
 import { createRoot } from "react-dom/client";
 
 import { api, mediaUrl } from "../api";
+import { cacheMedia, localizeLook, localStore } from "../storage";
 import type {
   ItemResult,
   LookBuildResponse,
@@ -74,16 +75,15 @@ function App() {
   }, []);
 
   useEffect(() => {
-    void Promise.all([api.health(), api.profile()])
-      .then(([, currentProfile]) => {
-        setConnection("online");
+    void localStore.profile()
+      .then((currentProfile) => {
         setProfile(currentProfile);
         if (!currentProfile) setOnboardingStep(0);
       })
       .catch(() => {
-        setConnection("offline");
-        setSetupOpen(true);
+        setError("Your private storage could not be opened");
       });
+    void api.health().then(() => setConnection("online")).catch(() => setConnection("offline"));
     void chrome.runtime
       .sendMessage({ type: "GET_PENDING_CAPTURE" })
       .then((response: { capture?: PendingCapture | null } | undefined) => {
@@ -101,7 +101,7 @@ function App() {
       }
       if (message.type === "CAPTURE_FAILED") {
         sendResponse({ ok: true });
-        setError(message.error ?? "Chrome could not capture this page");
+        setError(message.error ?? "Your browser could not capture this page");
         setStatus("Capture stopped");
       }
       return false;
@@ -118,7 +118,7 @@ function App() {
     setBusy(true);
     setError(null);
     try {
-      const currentProfile = await api.uploadPhoto(photo);
+      const currentProfile = await localStore.saveProfile(photo);
       setProfile(currentProfile);
       setSetupOpen(false);
       setOnboardingStep(null);
@@ -141,7 +141,7 @@ function App() {
       if (!response?.ok) throw new Error(response?.error ?? "Could not start capture on this page");
     } catch (captureError) {
       const message = readableError(captureError);
-      setError(message.includes("Cannot access contents") ? "Chrome blocks capture on this page. Try a regular website." : message);
+      setError(message.includes("Cannot access contents") ? "Your browser blocks capture on this page. Try a regular website." : message);
       setStatus("Capture stopped");
     }
   }
@@ -177,7 +177,7 @@ function App() {
     setError(null);
     setStatus("Reading the clothes and searching stores…");
     try {
-      setLook(await api.createLook(capture.preview, capture.sourceUrl));
+      setLook(await localizeLook(await api.createLook(capture.preview, capture.sourceUrl)));
       setStatus("Closest outfit ready");
     } catch (lookError) {
       setError(readableError(lookError));
@@ -194,7 +194,7 @@ function App() {
     setLook(null);
     setViewingSaved(false);
     try {
-      setSavedLooks(await api.savedLooks());
+      setSavedLooks(await localStore.savedLooks());
     } catch (savedError) {
       setError(readableError(savedError));
     }
@@ -217,7 +217,7 @@ function App() {
 
   async function deleteSavedLook(savedId: string) {
     try {
-      await api.deleteSavedLook(savedId);
+      await localStore.deleteSavedLook(savedId);
       setSavedLooks((current) => current.filter((saved) => saved.id !== savedId));
     } catch (deleteError) {
       setError(readableError(deleteError));
@@ -249,7 +249,6 @@ function App() {
         <SetupPhoto
           photo={photo}
           busy={busy}
-          connection={connection}
           error={error}
           onPhoto={setPhoto}
           onSave={saveSetup}
@@ -289,6 +288,7 @@ function App() {
               onHome={resetHome}
               allowActions={!viewingSaved}
               savedView={viewingSaved}
+              profilePhoto={profile?.photo_ref ?? null}
             />
           ) : (
             <Launcher
@@ -359,7 +359,6 @@ function Onboarding({ step, onBack, onNext }: { step: number; onBack: () => void
 function SetupPhoto({
   photo,
   busy,
-  connection,
   error,
   onPhoto,
   onSave,
@@ -367,7 +366,6 @@ function SetupPhoto({
 }: {
   photo: File | null;
   busy: boolean;
-  connection: Connection;
   error: string | null;
   onPhoto: (file: File | null) => void;
   onSave: () => void;
@@ -401,8 +399,8 @@ function SetupPhoto({
       </label>
       <div className="privacy-note"><LockIcon /><span>Stored privately for your try-ons.</span></div>
       {error && <p className="error">{error}</p>}
-      <button className="primary" type="button" disabled={busy || connection !== "online"} onClick={onSave}>
-        {busy ? "Saving…" : connection === "offline" ? "Service unavailable" : "Save and continue"}
+      <button className="primary" type="button" disabled={busy} onClick={onSave}>
+        {busy ? "Saving…" : "Save and continue"}
       </button>
     </main>
   );
@@ -518,6 +516,7 @@ function LookView({
   onHome,
   allowActions,
   savedView,
+  profilePhoto,
 }: {
   look: LookBuildResponse;
   capturePreview: string;
@@ -525,6 +524,7 @@ function LookView({
   onHome: () => void;
   allowActions: boolean;
   savedView: boolean;
+  profilePhoto: string | null;
 }) {
   const [tryOn, setTryOn] = useState<TryOnJob | null>(null);
   const [tryOnError, setTryOnError] = useState<string | null>(null);
@@ -541,11 +541,15 @@ function LookView({
   async function startTryOn() {
     setTryOnError(null);
     try {
-      let job = await api.createTryOn(look.look_id, selections);
+      if (!profilePhoto) throw new Error("Add your fitting-room photo before trying on a look");
+      let job = await api.createTryOn(look, selections, profilePhoto);
       setTryOn(job);
       while (job.status === "queued" || job.status === "running") {
         await delay(2000);
         job = await api.tryOn(job.id);
+        if (job.status === "success" && job.result_ref) {
+          job = { ...job, result_ref: await cacheMedia(job.result_ref) };
+        }
         setTryOn(job);
       }
       if (job.status === "failed") setTryOnError(job.error ?? "Try-on stopped");
@@ -558,7 +562,7 @@ function LookView({
   async function saveLook() {
     setTryOnError(null);
     try {
-      await api.saveLook(withSelections(look, selections), tryOn?.result_ref ?? null);
+      await localStore.saveLook(withSelections(look, selections), tryOn?.result_ref ?? null);
       setSaved(true);
     } catch (error) {
       setTryOnError(readableError(error));

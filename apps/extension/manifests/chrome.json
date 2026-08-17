@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "WANT!",
   "description": "Turn a look on your screen into a shoppable try-on.",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "minimum_chrome_version": "116",
   "permissions": ["activeTab", "scripting", "sidePanel"],
   "host_permissions": ["<all_urls>"],

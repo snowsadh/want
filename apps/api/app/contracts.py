@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
@@ -39,12 +38,6 @@ class TryOnStatus(StrEnum):
 class HealthResponse(BaseModel):
     status: str = "ok"
     service: str = "want-api"
-
-
-class UserProfile(BaseModel):
-    photo_ref: str
-    created_at: datetime
-    updated_at: datetime
 
 
 class GarmentAnalysis(StrictModel):
@@ -146,18 +139,6 @@ class LookBuildResponse(StrictModel):
     result: LookResult
 
 
-class TryOnCreate(StrictModel):
-    look_id: str
-    selections: dict[str, int] = Field(default_factory=dict)
-
-    @field_validator("selections")
-    @classmethod
-    def non_negative_ranks(cls, value: dict[str, int]) -> dict[str, int]:
-        if any(rank < 0 for rank in value.values()):
-            raise ValueError("selected ranks must be non-negative")
-        return value
-
-
 class TryOnJob(StrictModel):
     id: str
     look_id: str
@@ -166,16 +147,3 @@ class TryOnJob(StrictModel):
     result_ref: str | None = None
     error: str | None = None
     rendered_garment_item_ids: list[str] = Field(default_factory=list)
-
-
-class SavedLookCreate(StrictModel):
-    source_url: HttpUrl | None = None
-    capture_ref: str
-    personalized_result_ref: str | None = None
-    snapshot: LookResult
-
-
-class SavedLook(SavedLookCreate):
-    id: str
-    created_at: datetime
-    updated_at: datetime

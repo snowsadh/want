@@ -1,11 +1,13 @@
 {
   "name": "@want/extension",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && node scripts/build.mjs all",
+    "build:chrome": "tsc -b && node scripts/build.mjs chrome",
+    "build:firefox": "tsc -b && node scripts/build.mjs firefox",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {
