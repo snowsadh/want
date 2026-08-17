@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Install WANT! and turn any outfit online into a shoppable look you can try on yourself."
+    />
+    <meta name="theme-color" content="#f7f8fc" />
+    <title>Install WANT!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,700..900&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      href="https://raw.githubusercontent.com/snowsadh/want/main/apps/extension/public/icons/icon-32.png"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#install">Skip to installation</a>
+
+    <header>
+      <span class="platform">Chrome · macOS + Windows</span>
+      <nav aria-label="Project links">
+        <a
+          href="https://raw.githubusercontent.com/snowsadh/want/main/docs/architecture.png"
+          target="_blank"
+          rel="noreferrer"
+        >Architecture ↗</a>
+        <a href="https://github.com/snowsadh/want" target="_blank" rel="noreferrer">GitHub ↗</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="intro" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <h1 id="page-title">
+            <img
+              src="https://raw.githubusercontent.com/snowsadh/want/main/apps/extension/public/wordmark.png"
+              alt="WANT!"
+            />
+          </h1>
+          <p class="lede">
+            An agentic fashion workflow that turns any outfit you spot online into a
+            shoppable look you can try on yourself.
+          </p>
+          <a class="button hero-button" href="#install">
+            Install WANT! <span aria-hidden="true">↓</span>
+          </a>
+        </div>
+
+        <div class="story" aria-label="How WANT! works">
+          <figure>
+            <img
+              src="https://raw.githubusercontent.com/snowsadh/want/main/apps/extension/public/onboarding/grab.png"
+              alt="Select an outfit from anywhere online"
+            />
+            <figcaption>
+              <strong>Grab the look</strong>
+              <span>Box an outfit on any page or upload an image.</span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img
+              src="https://raw.githubusercontent.com/snowsadh/want/main/apps/extension/public/onboarding/try.png"
+              alt="Try the selected outfit on yourself"
+            />
+            <figcaption>
+              <strong>Try it on</strong>
+              <span>See the selected clothing on your own photo.</span>
+            </figcaption>
+          </figure>
+          <figure>
+            <img
+              src="https://raw.githubusercontent.com/snowsadh/want/main/apps/extension/public/onboarding/get.png"
+              alt="Open and buy the real products"
+            />
+            <figcaption>
+              <strong>Get the outfit</strong>
+              <span>Open real products directly at their stores.</span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="install" id="install" aria-labelledby="install-title">
+        <div class="install-heading">
+          <p class="eyebrow">One path · about a minute</p>
+          <h2 id="install-title">Install WANT!</h2>
+        </div>
+
+        <ol>
+          <li>
+            <span class="step-number">1</span>
+            <div>
+              <h3>Download the installer</h3>
+              <p>No backend setup or API keys required.</p>
+              <a
+                class="button"
+                id="installer-download"
+                href="downloads/want-installer-macos.zip"
+                download
+              >
+                <span aria-hidden="true">↓</span>
+                <span id="installer-label">Download for macOS</span>
+              </a>
+              <p class="alternate-downloads">
+                Other system:
+                <a href="downloads/want-installer-macos.zip" download>macOS</a>
+                <span aria-hidden="true">·</span>
+                <a href="downloads/want-installer-windows.zip" download>Windows</a>
+              </p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">2</span>
+            <div>
+              <h3>Run it</h3>
+              <p id="run-instruction">Open the ZIP, then open <strong>install-want.command</strong>. It downloads WANT!, copies its folder path, and opens Chrome Extensions.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-number">3</span>
+            <div>
+              <h3>Approve it in Chrome</h3>
+              <p id="approval-instruction">Turn on <strong>Developer mode</strong>, choose <strong>Load unpacked</strong>, press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>G</kbd>, paste the copied path, and select the folder.</p>
+            </div>
+          </li>
+          <li class="shortcut-step">
+            <span class="step-number">4</span>
+            <div>
+              <h3>Open WANT!</h3>
+              <p>Add your full-body photo once. Then use the extension anywhere on the web.</p>
+              <div class="shortcut"><kbd>Alt</kbd><span>+</span><kbd>W</kbd><strong>opens and closes WANT!</strong></div>
+            </div>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    <footer>
+      <span>Built with YouCam Clothes V3</span>
+      <a href="https://youcam-api.devpost.com/" target="_blank" rel="noreferrer">Hackathon ↗</a>
+    </footer>
+  </body>
+</html>

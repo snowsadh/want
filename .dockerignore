@@ -1,0 +1,10 @@
+.git
+.env
+.venv
+node_modules
+private-input
+private-output
+apps/extension
+apps/web
+docs
+tests

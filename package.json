@@ -4,6 +4,7 @@
   "packageManager": "pnpm@10.30.2",
   "scripts": {
     "build": "pnpm --filter @want/extension build",
+    "package:judge": "bash scripts/package-judge.sh",
     "typecheck": "pnpm --filter @want/extension typecheck"
   }
 }
