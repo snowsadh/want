@@ -28,7 +28,7 @@
   <rect width="1600" height="900" fill="#F7F8FC"/>
   <path d="M0 0H1600V10H0Z" fill="#315CFF"/><path d="M1460 0H1600V10H1460Z" fill="#FF4F70"/>
   <text x="45" y="55" class="title">WANT! agentic architecture</text>
-  <text x="45" y="83" class="body" font-size="15">The browser extension sends the capture to FastAPI, which coordinates OpenAI inventory, parallel shopping agents, product validation, YouCam rendering, and local persistence.</text>
+  <text x="45" y="83" class="body" font-size="15">The extension keeps user data locally. FastAPI coordinates OpenAI inventory, parallel shopping agents, product validation, and YouCam rendering.</text>
 
   <!-- top decomposition -->
   <g>
@@ -87,13 +87,13 @@
   <!-- action path -->
   <g>
     <rect x="85" y="780" width="255" height="105" rx="10" fill="#FFFFFF" stroke="#315CFF" stroke-width="2.5"/>
-    <text x="105" y="811" class="node">Select one product per item</text><text x="105" y="837" class="owner">React side panel → FastAPI</text><text x="105" y="861" class="body">POST /api/try-ons with the</text><text x="105" y="880" class="body">selected rank for every item</text>
+    <text x="105" y="811" class="node">Select one product per item</text><text x="105" y="837" class="owner">React · browser IndexedDB</text><text x="105" y="861" class="body">Uploads the person photo and exact</text><text x="105" y="880" class="body">selected product images for this task</text>
 
     <rect x="420" y="780" width="310" height="105" rx="10" fill="#17191C"/>
     <text x="440" y="811" class="node white">Render the selected apparel</text><text x="440" y="837" class="owner-pink">TryOnManager → YouCam Clothes V3</text><text x="440" y="861" class="body soft">Full body → shoes, or upper → lower → shoes.</text><text x="440" y="880" class="body soft">Each result becomes the next stage input.</text>
 
     <rect x="810" y="780" width="300" height="105" rx="10" fill="#FFFFFF" stroke="#FF4F70" stroke-width="2.5"/>
-    <text x="830" y="811" class="node">Return the completed look</text><text x="830" y="837" class="owner-pink">FastAPI · SQLite · private media</text><text x="830" y="861" class="body">Final image, rendered item IDs, product links,</text><text x="830" y="880" class="body">and the saved-look snapshot</text>
+    <text x="830" y="811" class="node">Return the completed look</text><text x="830" y="837" class="owner-pink">FastAPI → browser IndexedDB</text><text x="830" y="861" class="body">Final image and rendered item IDs return;</text><text x="830" y="880" class="body">the profile and saved wardrobe stay on device</text>
 
     <path d="M613 745V760H212.5V780" class="b"/><path d="M340 832H420" class="p"/><path d="M730 832H810" class="p"/>
   </g>

@@ -74,8 +74,9 @@ ranking store.
   preview reference instead of hallucinating a product.
 - Search and save meaningful accessories, but never claim an accessory appears
   in the YouCam output unless that render was actually performed and verified.
-- SQLite/local persistence is sufficient. No Redis, Celery, vector database, or
-  distributed services for the hackathon MVP.
+- Browser IndexedDB owns the profile and saved wardrobe. The hosted API keeps
+  only transient task media; no SQLite, Redis, Celery, vector database, or
+  distributed services are needed for the hackathon MVP.
 - API keys stay server-side and out of extension bundles, logs, fixtures, and
   committed files.
 

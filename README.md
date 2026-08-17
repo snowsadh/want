@@ -18,11 +18,21 @@
     <td align="center"><img src="apps/extension/public/onboarding/get.png" width="230" alt="Get the real products in the outfit"></td>
   </tr>
   <tr>
-    <td align="center"><strong>Grab the look</strong><br>Box an outfit on any page or upload an image.</td>
+    <td align="center"><strong>Grab a look</strong><br>Box an outfit on any page or upload an image.</td>
     <td align="center"><strong>Try it on</strong><br>See the selected clothing on your own photo.</td>
     <td align="center"><strong>Get the outfit</strong><br>Open real products directly at their stores.</td>
   </tr>
 </table>
+
+## Try WANT! without local setup
+
+Use the one-minute Chrome installer; no backend or API-key setup is required.
+
+1. Open the **[WANT! installer](https://snowsadh.github.io/want/)**.
+2. Download the macOS or Windows installer and approve the unpacked extension
+   in Chrome.
+3. Add a clear full-body photo once. Press **Alt+W** to open or close WANT! on
+   any webpage.
 
 ## The internet is the inspiration. WANT! is the fitting room.
 
@@ -55,10 +65,11 @@ The screenshots should be actual WANT! UI from one successful run, not mockups.
 ## The agentic workflow behind WANT!
 
 The user gives WANT! one goal, **recreate this look on me**, rather than a list
-of products to search. A local FastAPI service carries that goal through OpenAI
-visual inventory and concurrent product discovery, local evidence validation,
-the user's exact selections, YouCam Clothes V3 rendering, and private local
-persistence.
+of products to search. A FastAPI processing service carries that goal through
+OpenAI visual inventory and concurrent product discovery, local evidence
+validation, the user's exact selections, and YouCam Clothes V3 rendering. The
+extension keeps the user's photo and saved wardrobe privately in browser
+storage.
 
 <p align="center">
   <img src="docs/architecture.png" width="850" alt="WANT! agentic architecture showing the extension, FastAPI services, OpenAI inventory and parallel shopping agents, product validation, YouCam Clothes V3, and private persistence">
@@ -72,13 +83,10 @@ persistence.
 > render completed in 43.3 seconds. This sits alongside automated backend tests
 > and repeated browser-to-try-on runs.
 
-## Run WANT! locally
+## Run WANT! locally for development
 
-WANT! uses the same local FastAPI service for a Chrome side panel or Firefox
-sidebar. The browser builds live on dedicated branches:
-
-- [`main`](https://github.com/snowsadh/want/tree/main) for Chrome
-- [`firefox`](https://github.com/snowsadh/want/tree/firefox) for Firefox
+One shared extension source builds a Chrome side panel and a Firefox sidebar.
+For local development, both connect to the same local FastAPI service.
 
 ### Requirements
 
@@ -92,8 +100,6 @@ sidebar. The browser builds live on dedicated branches:
 ```bash
 git clone https://github.com/snowsadh/want.git
 cd want
-git switch main       # Chrome
-# or: git switch firefox
 ```
 
 ### 2. Configure the providers
@@ -132,13 +138,13 @@ uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
-3. Select **Load unpacked** and choose `apps/extension/dist`.
+3. Select **Load unpacked** and choose `apps/extension/dist/chrome`.
 
 #### Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Select **Load Temporary Add-on**.
-3. Choose `apps/extension/dist/manifest.json`.
+3. Choose `apps/extension/dist/firefox/manifest.json`.
 
 Open WANT! from the toolbar and add a clear full-body photo. Visit a page with
 an outfit, press **Alt+W**, choose **Pick a look**, and draw around it. The
@@ -148,12 +154,12 @@ shortcut can be changed at `chrome://extensions/shortcuts` or in Firefox under
 ## Privacy
 
 - WANT! acts only after a deliberate capture, upload, search, or try-on request.
-- API keys stay in the local FastAPI environment and out of the extension.
-- Photos, captures, product media, generated images, and saved looks stay in
-  ignored local directories and SQLite rather than a public feed.
-
-Read the full [privacy policy](docs/privacy-policy.md) for provider and data
-handling details.
+- OpenAI and YouCam API keys stay in the FastAPI environment and out of source
+  control; they are never bundled into the extension.
+- The fitting-room photo and saved looks live in the extension's private
+  IndexedDB storage. They are not stored in a shared cloud account or feed.
+- A requested analysis or try-on sends the required images to the FastAPI
+  service and its named providers. Server media is transient task data.
 
 <details>
 <summary><strong>Technical details and repository map</strong></summary>
@@ -163,11 +169,12 @@ handling details.
 | Layer | Technology | Responsibility |
 | --- | --- | --- |
 | Browser experience | Manifest V3, TypeScript, React, Vite | Capture, profile, product selection, try-on results, and saved looks |
-| Local API | Python 3.12, FastAPI, Pydantic | Server-side keys, request validation, orchestration, and API contracts |
+| Processing API | Python 3.12, FastAPI, Pydantic | Server-side provider keys, request validation, orchestration, and API contracts |
 | Visual inventory and shopping | OpenAI Responses API, hosted image and text search, `asyncio` | Detect every wearable and run one concurrent product shopper per item |
 | Product evidence | `httpx`, Pillow | Validate, decode, and preserve usable product images and links |
 | Virtual try-on | YouCam Clothes V3 | Render the selected supported apparel on the user's photo |
-| Private persistence | SQLite and local media files | Store the profile, captures, products, render stages, and saved looks |
+| Private persistence | Browser IndexedDB | Store the profile, product evidence, final images, and saved looks on the user's device |
+| Transient task media | FastAPI local filesystem | Hold validated images and YouCam stages only while processing a request |
 
 ### Development server
 
@@ -195,8 +202,12 @@ pnpm build
   preferring the original page image when possible.
 - `apps/extension/src/sidepanel/main.tsx` contains the React screens, product
   rows, selection state, try-on result, and saved-look flow.
-- `apps/extension/src/api.ts` is the browser client for the local FastAPI
+- `apps/extension/src/api.ts` is the browser client for the FastAPI
   service; `types.ts` mirrors its response contracts.
+- `apps/extension/src/storage.ts` owns the private IndexedDB profile and saved
+  wardrobe, and copies task images into browser-local data before saving.
+- `apps/web/` contains the judge installer page and downloadable browser
+  packages; it does not contain the application backend.
 - `apps/api/app/main.py` wires the routes and process-lifetime services.
 - `openai_discovery.py` owns the OpenAI Responses inventory and concurrent
   shopping calls; `openai_prompts.py` contains their prompts.
@@ -204,10 +215,12 @@ pnpm build
   decodes product images, retries empty rows, and assembles the product result.
 - `try_on.py` validates the selected ranks and sequences supported garment
   regions through `youcam.py`.
-- `database.py` and `media.py` store the local profile, saved looks, captures,
-  product media, render stages, and final YouCam images.
+- `media.py` validates and writes transient capture, product, person, and render
+  inputs used by the processing pipeline.
 - `contracts.py` defines the backend data contracts; `tests/` protects API,
-  normalization, selection, persistence, and YouCam behavior.
+  normalization, selection, uploaded-image handoff, and YouCam behavior.
+- `Dockerfile` and `railway.toml` deploy only the FastAPI processing service;
+  browser profiles and saved looks remain on the user's device.
 
 The detailed behavior lives in [`docs/product-spec.md`](docs/product-spec.md).
 The accepted runtime and provider evaluation live in

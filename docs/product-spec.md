@@ -90,11 +90,12 @@ hosiery, obvious underlayers, leg warmers, tied waist layers and unsupported
 accessories remain shopping-only recommendations. Record and label only item IDs
 actually rendered.
 
-Each completed YouCam stage is persisted locally and becomes the next stage
-source. The final persisted image—not a temporary provider URL—is shown and
-saved. If a retailer blocks YouCam from downloading one selected reference,
-preserve any successful stages, keep that product shoppable but label it not in
-the preview, and fail the try-on only when no selected garment can be rendered.
+Before try-on, the extension uploads its browser-local person photo and the
+exact selected, already-validated product images to FastAPI. Each completed
+YouCam stage becomes the next stage source. The extension copies the final
+image into IndexedDB rather than saving a temporary provider URL. Preserve any
+successful stages, label shopping-only pieces honestly, and fail the try-on
+only when no selected garment can be rendered.
 
 ## Results and saved looks
 
@@ -107,12 +108,14 @@ prices, links and source URL so reopening it does not silently change.
 
 ## Privacy and scope
 
-- One local profile; SQLite stores profile metadata and saved snapshots.
-- Local files store private photos, captures and generated images.
+- IndexedDB in the extension stores the profile photo, stable product evidence,
+  final generated images and saved snapshots on the user's device.
+- The hosted FastAPI service has no user database. Its local files are transient
+  processing inputs and outputs, not durable accounts or a shared wardrobe.
 - API keys stay server-side and out of the extension, logs, fixtures and Git.
-- No product catalogue, vector index, Redis, worker, auth, social layer,
-  checkout or separate service. Product images are retained only within their
-  private look snapshot.
+- No product catalogue, vector index, Redis, worker, social layer, checkout or
+  account service exists.
+- Product images are retained durably only inside their browser-local look.
 - Generated imagery is a visual preview, not a claim about physical fit.
 
 ## Demo acceptance

@@ -166,7 +166,8 @@ looks allow sync across devices. It is not required for the hackathon flow.
 
 For the current MVP:
 
-- keep the existing local profile, local media, SQLite and local Saved Looks;
+- keep the existing browser-local profile, generated images and Saved Looks in
+  extension IndexedDB;
 - do not imply that an email address creates cloud sync when it does not;
 - email may be omitted or stored only as clearly local profile metadata.
 
