@@ -26,78 +26,59 @@
 
 ## The internet is the inspiration. WANT! is the fitting room.
 
-Great outfits rarely appear as tidy product listings. They show up in videos,
-posts, editorials, and street-style photos—usually with no useful way to find
-the complete look, much less see it on yourself.
+WANT! turns a look from a video, post, editorial, or webpage into a complete
+set of real products and a personalized YouCam try-on.
 
-WANT! closes that gap in one continuous experience:
+1. **Capture what caught your eye.** Press **Alt+W** and draw around an outfit,
+   or upload a screenshot.
+2. **Find the complete outfit.** OpenAI identifies the visible clothing, shoes,
+   and accessories. A concurrent shopping agent then finds up to three real
+   products for each distinct item.
+3. **Choose the closest recreation.** Select one option in every product row.
+   That exact combination becomes the outfit used by the rest of the workflow.
+4. **See it on you.** YouCam Clothes V3 renders the supported selections on your
+   photo in sequence. Anything not rendered stays clearly marked and shoppable.
+5. **Get it or keep it.** Open products directly at their retailers, with known
+   prices preserved, or save the finished look privately with you as the model.
 
-1. **Capture what caught your eye.** Press **Alt+W**, choose **Pick a look**,
-   and draw around an outfit on the page. You can also upload a screenshot.
-2. **Let the workflow fan out.** WANT! identifies every visible wearable, then
-   runs a dedicated live shopper for each distinct item in parallel.
-3. **Build your closest recreation.** Browse up to three strong options in each
-   product row and select the combination that feels right.
-4. **See it on you.** YouCam Clothes V3 renders supported apparel on your photo,
-   carrying earlier garment stages forward as the outfit comes together.
-5. **Get it or keep it.** Open any product at its retailer, or save the finished
-   look to your private collection—with you as the model.
+<!--
+## Product proof
 
-## Why WANT! feels different
+When the final demo screenshots are ready, insert two wide images here:
 
-- **It is agentic by design.** One high-level goal becomes coordinated visual
-  reasoning, parallel shopping, evidence checks, targeted recovery, and VTO.
-- **It understands looks, not isolated products.** A reference becomes a
-  complete inventory of clothing, shoes, jewelry, and accessories.
-- **Discovery and try-on stay connected.** The exact products you choose are
-  the products sent into the YouCam rendering flow.
-- **Every result leads somewhere useful.** Product cards preserve real images,
-  listed prices, and direct retailer links wherever a credible match exists.
-- **The preview stays honest.** Pieces that YouCam did not render remain
-  shoppable in the look tray and are clearly marked as not shown in the preview.
-- **Your photos stay yours.** Profiles, captures, generated images, and saved
-  looks live in private local storage rather than a public feed.
+1. Capture on a real webpage -> complete item inventory -> shoppable product rows.
+2. User-selected products -> YouCam result -> product links and saved look.
+
+The screenshots should be actual WANT! UI from one successful run, not mockups.
+-->
 
 ## The agentic workflow behind WANT!
 
-The user gives WANT! a goal—**recreate this look on me**—rather than a list of
-products to search. The system decomposes that goal and carries state across a
-multi-step workflow:
+The user gives WANT! one goal, **recreate this look on me**, rather than a list
+of products to search. A local FastAPI service carries that goal through OpenAI
+visual inventory and concurrent product discovery, local evidence validation,
+the user's exact selections, YouCam Clothes V3 rendering, and private local
+persistence.
 
-- **Perceive:** OpenAI reasons over the reference image and returns a structured
-  inventory of every visible wearable.
-- **Delegate:** one concurrent OpenAI Responses shopper works on each distinct
-  item with hosted image and text search.
-- **Verify and recover:** WANT! checks product links and images, preserves usable
-  evidence, and retries only the rows that came back without a viable image.
-- **Let the user direct the result:** each row keeps up to three real options;
-  the combination selected in the UI becomes the outfit state.
-- **Act through YouCam:** the orchestrator sends those exact selections through
-  the appropriate YouCam Clothes V3 garment stages to build the try-on.
+<p align="center">
+  <img src="docs/architecture.png" width="850" alt="WANT! agentic architecture showing the extension, FastAPI services, OpenAI inventory and parallel shopping agents, product validation, YouCam Clothes V3, and private persistence">
+</p>
 
-```text
-goal: "recreate this look on me"
-    -> OpenAI inventories every visible wearable
-    -> one live shopping agent runs per distinct item, concurrently
-    -> product evidence is validated; only failed rows are repaired
-    -> the user directs the workflow by choosing one coherent combination
-    -> YouCam Clothes V3 renders those selected garments in sequence
-    -> the finished look and its products can be saved privately
-```
+<p align="center"><sub><a href="docs/architecture.svg">Open the editable SVG</a></sub></p>
 
-This directly answers the hackathon's invitation to build real products with
-[agentic AI workflows](https://youcam-api.devpost.com/), rather than a wrapper
-around one API call. OpenAI supplies the reasoning and live product discovery;
-**YouCam is the fitting room**—the visible, product-defining action that turns
-the agentic workflow into a personalized buying decision.
+> **Measured performance:** A repeatable multi-look benchmark produced 30
+> detected items, 38 retail products, only two honest fallbacks, 34.7 seconds
+> mean latency, and 49.1 seconds maximum latency. A measured end-to-end YouCam
+> render completed in 43.3 seconds. This sits alongside automated backend tests
+> and repeated browser-to-try-on runs.
 
-## Try WANT!
+## Run WANT! locally
 
-WANT! runs as a Chrome side panel or Firefox sidebar with the same local
-FastAPI service. The browser builds live on dedicated branches:
+WANT! uses the same local FastAPI service for a Chrome side panel or Firefox
+sidebar. The browser builds live on dedicated branches:
 
-- [`main`](https://github.com/snowsadh/want/tree/main) — Chrome
-- [`firefox`](https://github.com/snowsadh/want/tree/firefox) — Firefox
+- [`main`](https://github.com/snowsadh/want/tree/main) for Chrome
+- [`firefox`](https://github.com/snowsadh/want/tree/firefox) for Firefox
 
 ### Requirements
 
@@ -106,30 +87,36 @@ FastAPI service. The browser builds live on dedicated branches:
 - Node.js and [`pnpm`](https://pnpm.io/)
 - OpenAI and YouCam API keys
 
-### 1. Configure the providers
+### 1. Get the browser build
 
-Create `.env` at the repository root:
+```bash
+git clone https://github.com/snowsadh/want.git
+cd want
+git switch main       # Chrome
+# or: git switch firefox
+```
+
+### 2. Configure the providers
+
+```bash
+cp .env.example .env
+```
+
+Add the two server-side keys to `.env`:
 
 ```text
 OPENAI_API_KEY=...
 YOUCAM_API_KEY=...
 ```
 
-The keys remain in the local server environment and are never bundled into the
+The keys stay in the local API environment and are never bundled into the
 extension.
-
-### 2. Choose a browser build
-
-```bash
-git switch main       # Chrome
-# or: git switch firefox
-```
 
 ### 3. Install and build
 
 ```bash
 uv sync
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 ```
 
@@ -153,22 +140,34 @@ uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
 2. Select **Load Temporary Add-on**.
 3. Choose `apps/extension/dist/manifest.json`.
 
-Then open WANT! from the toolbar, add a full-body photo, visit a page with an
-outfit, and press **Alt+W** to choose **Pick a look**.
+Open WANT! from the toolbar and add a clear full-body photo. Visit a page with
+an outfit, press **Alt+W**, choose **Pick a look**, and draw around it. The
+shortcut can be changed at `chrome://extensions/shortcuts` or in Firefox under
+**Manage Extension Shortcuts**.
 
-Change the shortcut at `chrome://extensions/shortcuts` in Chrome or in
-`about:addons` under **Manage Extension Shortcuts** in Firefox.
+## Privacy
 
-## Privacy by design
+- WANT! acts only after a deliberate capture, upload, search, or try-on request.
+- API keys stay in the local FastAPI environment and out of the extension.
+- Photos, captures, product media, generated images, and saved looks stay in
+  ignored local directories and SQLite rather than a public feed.
 
-WANT! acts only after a deliberate capture, upload, search, or try-on action.
-Personal photos, captures, provider payloads, and generated images are stored in
-ignored local `private-input/` and `private-output/` directories. Saved Looks
-and the local profile use SQLite. Read the full [privacy
-policy](docs/privacy-policy.md) for data handling and provider details.
+Read the full [privacy policy](docs/privacy-policy.md) for provider and data
+handling details.
 
 <details>
-<summary><strong>Development and code map</strong></summary>
+<summary><strong>Technical details and repository map</strong></summary>
+
+### Stack
+
+| Layer | Technology | Responsibility |
+| --- | --- | --- |
+| Browser experience | Manifest V3, TypeScript, React, Vite | Capture, profile, product selection, try-on results, and saved looks |
+| Local API | Python 3.12, FastAPI, Pydantic | Server-side keys, request validation, orchestration, and API contracts |
+| Visual inventory and shopping | OpenAI Responses API, hosted image and text search, `asyncio` | Detect every wearable and run one concurrent product shopper per item |
+| Product evidence | `httpx`, Pillow | Validate, decode, and preserve usable product images and links |
+| Virtual try-on | YouCam Clothes V3 | Render the selected supported apparel on the user's photo |
+| Private persistence | SQLite and local media files | Store the profile, captures, products, render stages, and saved looks |
 
 ### Development server
 
@@ -176,7 +175,7 @@ policy](docs/privacy-policy.md) for data handling and provider details.
 uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Re-run `pnpm build` and reload the temporary add-on after frontend changes.
+Re-run `pnpm build` and reload the unpacked extension after frontend changes.
 
 ### Verification
 
@@ -187,27 +186,31 @@ pnpm typecheck
 pnpm build
 ```
 
-### Repository map
+### Code map
 
-- `apps/extension/src/background.ts` opens the sidebar, activates capture mode,
-  and carries a pending capture into the panel.
+- `apps/extension/src/background.ts` opens the side panel or sidebar, activates
+  capture mode, and carries a pending capture into the extension UI.
 - `apps/extension/src/content.ts` owns the on-page drag-selection experience.
-- `apps/extension/src/sidepanel/capture.ts` crops the selection, preferring the
-  original page image when possible.
-- `apps/extension/src/sidepanel/main.tsx` contains the sidebar screens and
-  product flow; `api.ts` is its backend client and `types.ts` mirrors the API.
-- `apps/api/app/main.py` wires the FastAPI routes and process-lifetime services.
-- `openai_discovery.py`, `openai_prompts.py`, and `look_builder.py` inventory,
-  search, normalize, validate product images, and assemble each product row.
-- `try_on.py` validates the selected products and sequences supported garment
+- `apps/extension/src/sidepanel/capture.ts` crops the selected pixels,
+  preferring the original page image when possible.
+- `apps/extension/src/sidepanel/main.tsx` contains the React screens, product
+  rows, selection state, try-on result, and saved-look flow.
+- `apps/extension/src/api.ts` is the browser client for the local FastAPI
+  service; `types.ts` mirrors its response contracts.
+- `apps/api/app/main.py` wires the routes and process-lifetime services.
+- `openai_discovery.py` owns the OpenAI Responses inventory and concurrent
+  shopping calls; `openai_prompts.py` contains their prompts.
+- `look_builder.py` validates inventory records, creates crops, downloads and
+  decodes product images, retries empty rows, and assembles the product result.
+- `try_on.py` validates the selected ranks and sequences supported garment
   regions through `youcam.py`.
 - `database.py` and `media.py` store the local profile, saved looks, captures,
-  product media, and final YouCam images.
-- `contracts.py` defines the backend data contract; `tests/` protects API,
-  normalization, selection, and YouCam behavior.
+  product media, render stages, and final YouCam images.
+- `contracts.py` defines the backend data contracts; `tests/` protects API,
+  normalization, selection, persistence, and YouCam behavior.
 
-The detailed product behavior lives in
-[`docs/product-spec.md`](docs/product-spec.md). The accepted agentic runtime and
-provider evaluation live in [`docs/agentic-plan.md`](docs/agentic-plan.md).
+The detailed behavior lives in [`docs/product-spec.md`](docs/product-spec.md).
+The accepted runtime and provider evaluation live in
+[`docs/agentic-plan.md`](docs/agentic-plan.md).
 
 </details>
