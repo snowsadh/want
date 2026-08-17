@@ -2,10 +2,12 @@ import type { ExtensionMessage, PendingCapture } from "./types";
 
 let pendingCapture: PendingCapture | null = null;
 
-void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+const firefoxChrome = chrome as typeof chrome & {
+  sidebarAction: { open: () => Promise<void> };
+};
 
-chrome.runtime.onInstalled.addListener(() => {
-  void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
+chrome.action.onClicked.addListener(() => {
+  void firefoxChrome.sidebarAction.open();
 });
 
 chrome.runtime.onMessage.addListener(

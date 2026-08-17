@@ -22,8 +22,8 @@ sharing or public-profile modes.
 6. Press **Try this look** to render that exact selected combination with YouCam.
 7. Inspect direct product links or save the selected snapshot locally.
 
-Normal images and paused video frames are supported. Chrome-owned pages such as
-`chrome://` and the Chrome Web Store are outside extension access.
+Normal images and paused video frames are supported. Firefox-owned pages such as
+`about:` pages and Firefox Add-ons are outside extension access.
 
 ## Outfit inventory
 
@@ -117,7 +117,7 @@ prices, links and source URL so reopening it does not silently change.
 
 ## Demo acceptance
 
-The MVP is ready when the actual Chrome profile completes three consecutive
+The MVP is ready when the actual Firefox profile completes three consecutive
 capture-to-saved-YouCam runs inside 1–3 minutes without a fabricated inventory
 item, unsupported render claim or broken visible interaction.
 

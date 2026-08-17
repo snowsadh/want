@@ -15,6 +15,20 @@ from apps.api.app.main import create_app
 from apps.api.app.settings import ROOT, Settings
 
 
+def test_firefox_extension_origin_is_allowed(tmp_path: Path) -> None:
+    settings = Settings(
+        data_dir=tmp_path,
+        database_path=tmp_path / "want.sqlite3",
+        media_dir=tmp_path / "media",
+        migrations_dir=ROOT / "apps" / "api" / "migrations",
+    )
+    origin = "moz-extension://2d31a26e-1145-4dc0-b29c-80d11d12fb4a"
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/api/health", headers={"Origin": origin})
+
+    assert response.headers["access-control-allow-origin"] == origin
+
+
 def test_health_and_profile_round_trip(tmp_path: Path) -> None:
     settings = Settings(
         data_dir=tmp_path,

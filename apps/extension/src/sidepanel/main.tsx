@@ -101,7 +101,7 @@ function App() {
       }
       if (message.type === "CAPTURE_FAILED") {
         sendResponse({ ok: true });
-        setError(message.error ?? "Chrome could not capture this page");
+        setError(message.error ?? "Firefox could not capture this page");
         setStatus("Capture stopped");
       }
       return false;
@@ -141,7 +141,7 @@ function App() {
       if (!response?.ok) throw new Error(response?.error ?? "Could not start capture on this page");
     } catch (captureError) {
       const message = readableError(captureError);
-      setError(message.includes("Cannot access contents") ? "Chrome blocks capture on this page. Try a regular website." : message);
+      setError(message.includes("Cannot access contents") ? "Firefox blocks capture on this page. Try a regular website." : message);
       setStatus("Capture stopped");
     }
   }
@@ -399,7 +399,7 @@ function SetupPhoto({
           <span>JPEG or PNG · 10 MB max</span>
         </span>
       </label>
-      <div className="privacy-note"><LockIcon /><span>Stored privately for your try-ons.</span></div>
+      <div className="privacy-note"><LockIcon /><span>Stored by your local WANT! server and sent to YouCam only when you try a look.</span></div>
       {error && <p className="error">{error}</p>}
       <button className="primary" type="button" disabled={busy || connection !== "online"} onClick={onSave}>
         {busy ? "Saving…" : connection === "offline" ? "Service unavailable" : "Save and continue"}
@@ -475,7 +475,7 @@ function CaptureReady({ preview, onFind, onPickAgain }: { preview: string; onFin
         <button type="button" className="quiet-button" onClick={onPickAgain}>Replace</button>
       </div>
       <div className="capture-frame"><img src={preview} alt="Selected look" /><span className="scan-corner tl" /><span className="scan-corner br" /></div>
-      <div className="ready-note"><span className="ready-dot" /><span>Ready to find each visible piece</span></div>
+      <div className="ready-note"><span className="ready-dot" /><span>Ready to send this image to OpenAI and find each visible piece</span></div>
       <button className="primary want-button" type="button" onClick={onFind}>WANT! this look <span>→</span></button>
     </section>
   );

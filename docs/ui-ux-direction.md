@@ -135,7 +135,7 @@ The selected system must:
 - give photography and clothing cutouts priority over interface decoration;
 - stay expressive enough for WANT!'s name and capture interaction;
 - feel trustworthy beside real prices, retailer links and generated previews;
-- remain legible and composed in a narrow Chrome side panel.
+- remain legible and composed in a narrow Firefox sidebar.
 
 Removing the person's background is deferred. Preserve the original photo and
 YouCam result in the UI for the MVP.

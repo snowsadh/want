@@ -285,7 +285,7 @@ selected product has a known price in the same currency; otherwise hide it.
 
 Keep returned `product_url` values for card links. Download each returned
 `image_url` once, reject inaccessible or invalid images, and expose the private
-look-scoped copy to the side panel so every retained product has a stable image.
+look-scoped copy to the sidebar so every retained product has a stable image.
 
 ## YouCam handoff
 
@@ -318,7 +318,7 @@ remain recommendations and must never be labelled as present in the preview.
   item after preserving only reachable, decodable product images.
 - `try_on.py` validates selected ranks and uploads the selected local product
   references to YouCam.
-- The side panel uses wraparound arrows, defaults to rank one, and sends/saves
+- The sidebar uses wraparound arrows, defaults to rank one, and sends/saves
   the current combination.
 - Gemini, SerpAPI, the visual verifier, Agents SDK and completion/score contracts
   were removed after the fixed gate passed.
@@ -326,7 +326,7 @@ remain recommendations and must never be labelled as present in the preview.
 The five fixed references completed with 30 items, 38 products, two fallbacks,
 34.7 seconds mean latency and 49.1 seconds maximum latency. A real remote-URL
 YouCam render succeeded in 43.3 seconds. Local tests, Ruff, TypeScript and the
-extension build pass. Three clean runs in the actual demo Chrome profile remain
+extension build pass. Three clean runs in the actual demo Firefox profile remain
 part of final rehearsal.
 
 ## Failure behavior

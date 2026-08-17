@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "check:firefox": "node scripts/check-firefox-build.mjs",
     "typecheck": "tsc -b --pretty false"
   },
   "dependencies": {

@@ -6,7 +6,7 @@
 ## Current architecture
 
 ```text
-Chrome MV3 side panel
+Firefox MV3 sidebar
     -> FastAPI modular monolith
     -> OpenAI visual inventory
     -> concurrent OpenAI image + text shopping
@@ -41,7 +41,7 @@ Do not add endpoints for the hackathon demo.
 
 ### Browser verification
 
-- Reload `apps/extension/dist` in the actual demo Chrome profile.
+- Reload `apps/extension/dist` in the actual demo Firefox profile.
 - Verify toolbar click and `Alt+W` capture on a normal image and paused video.
 - Verify cancel uploads nothing and screenshot fallback selects the right area.
 - Confirm every detected item gets one row and arrows wrap through its options.

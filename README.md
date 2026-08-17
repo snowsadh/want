@@ -1,13 +1,13 @@
 # WANT!
 
-A private Chrome side-panel app that captures an outfit, finds current buyable
+A private Firefox sidebar app that captures an outfit, finds current buyable
 matches, previews selected apparel on the user's photo, and saves the result
 locally.
 
 ## How it works
 
 ```text
-Chrome side panel
+Firefox sidebar
     -> FastAPI receives the selected image
     -> OpenAI inventories every visible wearable
     -> one concurrent live shopping search runs per item
@@ -18,11 +18,11 @@ Chrome side panel
 
 OpenAI handles understanding and live product discovery; it does not generate
 the try-on. YouCam Clothes V3 is the visible rendering step and receives the
-exact products selected in the side panel.
+exact products selected in the sidebar.
 
 ## Run locally
 
-Prerequisites: Python 3.12, `uv`, Node.js, `pnpm`, and Chrome 116 or newer.
+Prerequisites: Python 3.12, `uv`, Node.js, `pnpm`, and Firefox 142 or newer.
 
 1. Put the provider keys in `.env`:
 
@@ -45,24 +45,24 @@ Prerequisites: Python 3.12, `uv`, Node.js, `pnpm`, and Chrome 116 or newer.
    uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
    ```
 
-4. Open `chrome://extensions`, enable **Developer mode**, choose **Load
-   unpacked**, and select `apps/extension/dist`.
+4. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary
+   Add-on**, and select `apps/extension/dist/manifest.json`.
 
 5. Open WANT! from the toolbar and choose a full-body photo.
 
-6. Chrome asks for persistent site access in a packaged/Web Store installation.
-   Development extensions loaded with **Load unpacked** do not show the normal
-   consumer installation prompt; Chrome reads the required `<all_urls>` grant
-   directly from the manifest. WANT! uses it only after **Pick a look** to inject
-   the selection overlay and capture the chosen rectangle. When the selection is
-   mostly one page image, WANT! crops its original-resolution asset; otherwise it
-   falls back to a cursor-hidden visible-tab screenshot. Chrome internal
-   pages, the Chrome Web Store, and browser settings pages remain restricted.
+6. Firefox asks for site access and discloses the selected website content,
+   source URL, and user-provided photo sent by WANT!. WANT! transmits data only
+   after a deliberate **Pick a look**, upload, search, or try-on action. When the
+   selection is mostly one page image, WANT! crops its original-resolution
+   asset; otherwise it falls back to a cursor-hidden visible-tab screenshot.
+   Firefox internal pages, Add-ons Manager, and browser settings remain
+   restricted. See `docs/privacy-policy.md` for the full disclosure.
 
 Press **Alt+W** on a regular webpage to open WANT!, then press **Pick a look**.
-The shortcut can be changed at `chrome://extensions/shortcuts`.
+The shortcut can be changed at `about:addons` under **Manage Extension
+Shortcuts**.
 
-Re-run `pnpm build` and reload the extension after frontend changes. The API
+Re-run `pnpm build` and reload the temporary add-on after frontend changes. The API
 reload command for development is:
 
 ```bash
@@ -80,12 +80,12 @@ pnpm build
 
 ## Code map
 
-- `apps/extension/src/background.ts` opens the side panel, injects capture mode,
+- `apps/extension/src/background.ts` opens the sidebar, injects capture mode,
   and stores a pending capture while the panel opens.
 - `apps/extension/src/content.ts` owns the on-page drag-selection overlay.
 - `apps/extension/src/sidepanel/capture.ts` turns the selected rectangle into a
   crop, preferring the original page image when possible.
-- `apps/extension/src/sidepanel/main.tsx` contains the side-panel screens and
+- `apps/extension/src/sidepanel/main.tsx` contains the sidebar screens and
   user flow; `api.ts` is its only backend client and `types.ts` mirrors the API.
 - `apps/api/app/main.py` wires the FastAPI routes and process-lifetime services.
 - `openai_discovery.py`, `openai_prompts.py`, and `look_builder.py` inventory,
