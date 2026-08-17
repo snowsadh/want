@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  WANT! turns any outfit you spot online into a shoppable look you can try on yourself, without leaving the page that inspired you.
+  WANT! is an <strong>agentic fashion workflow</strong> that turns any outfit you spot online into a shoppable look you can try on yourself, without leaving the page that inspired you.
 </p>
 
 <p align="center">
@@ -34,8 +34,8 @@ WANT! closes that gap in one continuous experience:
 
 1. **Capture what caught your eye.** Press **Alt+W**, choose **Pick a look**,
    and draw around an outfit on the page. You can also upload a screenshot.
-2. **Discover the whole outfit.** WANT! identifies every visible wearable and
-   finds current, buyable matches for each piece—not just the easiest item.
+2. **Let the workflow fan out.** WANT! identifies every visible wearable, then
+   runs a dedicated live shopper for each distinct item in parallel.
 3. **Build your closest recreation.** Browse up to three strong options in each
    product row and select the combination that feels right.
 4. **See it on you.** YouCam Clothes V3 renders supported apparel on your photo,
@@ -45,6 +45,8 @@ WANT! closes that gap in one continuous experience:
 
 ## Why WANT! feels different
 
+- **It is agentic by design.** One high-level goal becomes coordinated visual
+  reasoning, parallel shopping, evidence checks, targeted recovery, and VTO.
 - **It understands looks, not isolated products.** A reference becomes a
   complete inventory of clothing, shoes, jewelry, and accessories.
 - **Discovery and try-on stay connected.** The exact products you choose are
@@ -56,23 +58,38 @@ WANT! closes that gap in one continuous experience:
 - **Your photos stay yours.** Profiles, captures, generated images, and saved
   looks live in private local storage rather than a public feed.
 
-## More than a single API call
+## The agentic workflow behind WANT!
 
-WANT! uses an agentic shopping workflow to bridge inspiration and purchase:
+The user gives WANT! a goal—**recreate this look on me**—rather than a list of
+products to search. The system decomposes that goal and carries state across a
+multi-step workflow:
+
+- **Perceive:** OpenAI reasons over the reference image and returns a structured
+  inventory of every visible wearable.
+- **Delegate:** one concurrent OpenAI Responses shopper works on each distinct
+  item with hosted image and text search.
+- **Verify and recover:** WANT! checks product links and images, preserves usable
+  evidence, and retries only the rows that came back without a viable image.
+- **Let the user direct the result:** each row keeps up to three real options;
+  the combination selected in the UI becomes the outfit state.
+- **Act through YouCam:** the orchestrator sends those exact selections through
+  the appropriate YouCam Clothes V3 garment stages to build the try-on.
 
 ```text
-outfit selected anywhere on the web
+goal: "recreate this look on me"
     -> OpenAI inventories every visible wearable
-    -> concurrent live shopping runs for each distinct item
-    -> reachable product images and purchase links are preserved
-    -> the user chooses one coherent combination
-    -> YouCam Clothes V3 renders the supported selections
+    -> one live shopping agent runs per distinct item, concurrently
+    -> product evidence is validated; only failed rows are repaired
+    -> the user directs the workflow by choosing one coherent combination
+    -> YouCam Clothes V3 renders those selected garments in sequence
     -> the finished look and its products can be saved privately
 ```
 
-OpenAI handles visual understanding and live product discovery. **YouCam is the
-fitting room:** it is the visible, product-defining step that turns a list of
-matches into a personalized buying decision.
+This directly answers the hackathon's invitation to build real products with
+[agentic AI workflows](https://youcam-api.devpost.com/), rather than a wrapper
+around one API call. OpenAI supplies the reasoning and live product discovery;
+**YouCam is the fitting room**—the visible, product-defining action that turns
+the agentic workflow into a personalized buying decision.
 
 ## Try WANT!
 
