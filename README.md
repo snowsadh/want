@@ -2,10 +2,8 @@
   <img src="apps/extension/public/wordmark.png" width="300" alt="WANT!">
 </p>
 
-<p align="center"><strong>From “I want that” to “that’s me in it.”</strong></p>
-
 <p align="center">
-  WANT! turns any outfit you spot online into a shoppable look you can try on yourself—without leaving the page that inspired you.
+  WANT! turns any outfit you spot online into a shoppable look you can try on yourself, without leaving the page that inspired you.
 </p>
 
 <p align="center">
@@ -78,11 +76,15 @@ matches into a personalized buying decision.
 
 ## Try WANT!
 
-WANT! runs as a Firefox desktop sidebar with a local FastAPI service.
+WANT! runs as a Chrome side panel or Firefox sidebar with the same local
+FastAPI service. The browser builds live on dedicated branches:
+
+- [`main`](https://github.com/snowsadh/want/tree/main) — Chrome
+- [`firefox`](https://github.com/snowsadh/want/tree/firefox) — Firefox
 
 ### Requirements
 
-- Firefox 142 or newer
+- Chrome 116 or newer, or Firefox 142 or newer
 - Python 3.12 and [`uv`](https://docs.astral.sh/uv/)
 - Node.js and [`pnpm`](https://pnpm.io/)
 - OpenAI and YouCam API keys
@@ -99,7 +101,14 @@ YOUCAM_API_KEY=...
 The keys remain in the local server environment and are never bundled into the
 extension.
 
-### 2. Install and build
+### 2. Choose a browser build
+
+```bash
+git switch main       # Chrome
+# or: git switch firefox
+```
+
+### 3. Install and build
 
 ```bash
 uv sync
@@ -107,22 +116,31 @@ pnpm install
 pnpm build
 ```
 
-### 3. Start the local API
+### 4. Start the local API
 
 ```bash
 uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
 ```
 
-### 4. Load the Firefox extension
+### 5. Load the extension
+
+#### Chrome
+
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Select **Load unpacked** and choose `apps/extension/dist`.
+
+#### Firefox
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. Select **Load Temporary Add-on**.
 3. Choose `apps/extension/dist/manifest.json`.
-4. Open WANT! from the toolbar and add a full-body photo.
-5. Visit a page with an outfit, press **Alt+W**, and choose **Pick a look**.
 
-The shortcut can be changed in `about:addons` under **Manage Extension
-Shortcuts**.
+Then open WANT! from the toolbar, add a full-body photo, visit a page with an
+outfit, and press **Alt+W** to choose **Pick a look**.
+
+Change the shortcut at `chrome://extensions/shortcuts` in Chrome or in
+`about:addons` under **Manage Extension Shortcuts** in Firefox.
 
 ## Privacy by design
 
