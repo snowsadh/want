@@ -1,75 +1,149 @@
-# WANT!
+<p align="center">
+  <img src="apps/extension/public/wordmark.png" width="300" alt="WANT!">
+</p>
 
-A private Firefox sidebar app that captures an outfit, finds current buyable
-matches, previews selected apparel on the user's photo, and saves the result
-locally.
+<p align="center"><strong>From “I want that” to “that’s me in it.”</strong></p>
 
-## How it works
+<p align="center">
+  WANT! turns any outfit you spot online into a shoppable look you can try on yourself—without leaving the page that inspired you.
+</p>
+
+<p align="center">
+  Built for the <a href="https://youcam-api.devpost.com/">YouCam API Skin AI &amp; Apparel VTO Hackathon</a>
+  using <strong>YouCam Clothes V3</strong>.
+</p>
+
+<table>
+  <tr>
+    <td align="center"><img src="apps/extension/public/onboarding/grab.png" width="230" alt="Grab an outfit from anywhere on the web"></td>
+    <td align="center"><img src="apps/extension/public/onboarding/try.png" width="230" alt="Try the selected outfit on yourself"></td>
+    <td align="center"><img src="apps/extension/public/onboarding/get.png" width="230" alt="Get the real products in the outfit"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Grab the look</strong><br>Box an outfit on any page or upload an image.</td>
+    <td align="center"><strong>Try it on</strong><br>See the selected clothing on your own photo.</td>
+    <td align="center"><strong>Get the outfit</strong><br>Open real products directly at their stores.</td>
+  </tr>
+</table>
+
+## The internet is the inspiration. WANT! is the fitting room.
+
+Great outfits rarely appear as tidy product listings. They show up in videos,
+posts, editorials, and street-style photos—usually with no useful way to find
+the complete look, much less see it on yourself.
+
+WANT! closes that gap in one continuous experience:
+
+1. **Capture what caught your eye.** Press **Alt+W**, choose **Pick a look**,
+   and draw around an outfit on the page. You can also upload a screenshot.
+2. **Discover the whole outfit.** WANT! identifies every visible wearable and
+   finds current, buyable matches for each piece—not just the easiest item.
+3. **Build your closest recreation.** Browse up to three strong options in each
+   product row and select the combination that feels right.
+4. **See it on you.** YouCam Clothes V3 renders supported apparel on your photo,
+   carrying earlier garment stages forward as the outfit comes together.
+5. **Get it or keep it.** Open any product at its retailer, or save the finished
+   look to your private collection—with you as the model.
+
+## Why WANT! feels different
+
+- **It understands looks, not isolated products.** A reference becomes a
+  complete inventory of clothing, shoes, jewelry, and accessories.
+- **Discovery and try-on stay connected.** The exact products you choose are
+  the products sent into the YouCam rendering flow.
+- **Every result leads somewhere useful.** Product cards preserve real images,
+  listed prices, and direct retailer links wherever a credible match exists.
+- **The preview stays honest.** Pieces that YouCam did not render remain
+  shoppable in the look tray and are clearly marked as not shown in the preview.
+- **Your photos stay yours.** Profiles, captures, generated images, and saved
+  looks live in private local storage rather than a public feed.
+
+## More than a single API call
+
+WANT! uses an agentic shopping workflow to bridge inspiration and purchase:
 
 ```text
-Firefox sidebar
-    -> FastAPI receives the selected image
+outfit selected anywhere on the web
     -> OpenAI inventories every visible wearable
-    -> one concurrent live shopping search runs per item
-    -> the user chooses one real product per row
+    -> concurrent live shopping runs for each distinct item
+    -> reachable product images and purchase links are preserved
+    -> the user chooses one coherent combination
     -> YouCam Clothes V3 renders the supported selections
-    -> SQLite and local media store the private saved look
+    -> the finished look and its products can be saved privately
 ```
 
-OpenAI handles understanding and live product discovery; it does not generate
-the try-on. YouCam Clothes V3 is the visible rendering step and receives the
-exact products selected in the sidebar.
+OpenAI handles visual understanding and live product discovery. **YouCam is the
+fitting room:** it is the visible, product-defining step that turns a list of
+matches into a personalized buying decision.
 
-## Run locally
+## Try WANT!
 
-Prerequisites: Python 3.12, `uv`, Node.js, `pnpm`, and Firefox 142 or newer.
+WANT! runs as a Firefox desktop sidebar with a local FastAPI service.
 
-1. Put the provider keys in `.env`:
+### Requirements
 
-   ```text
-   OPENAI_API_KEY=...
-   YOUCAM_API_KEY=...
-   ```
+- Firefox 142 or newer
+- Python 3.12 and [`uv`](https://docs.astral.sh/uv/)
+- Node.js and [`pnpm`](https://pnpm.io/)
+- OpenAI and YouCam API keys
 
-2. Install and build:
+### 1. Configure the providers
 
-   ```bash
-   uv sync
-   pnpm install
-   pnpm build
-   ```
+Create `.env` at the repository root:
 
-3. Start the API:
+```text
+OPENAI_API_KEY=...
+YOUCAM_API_KEY=...
+```
 
-   ```bash
-   uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
-   ```
+The keys remain in the local server environment and are never bundled into the
+extension.
 
-4. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary
-   Add-on**, and select `apps/extension/dist/manifest.json`.
+### 2. Install and build
 
-5. Open WANT! from the toolbar and choose a full-body photo.
+```bash
+uv sync
+pnpm install
+pnpm build
+```
 
-6. Firefox asks for site access and discloses the selected website content,
-   source URL, and user-provided photo sent by WANT!. WANT! transmits data only
-   after a deliberate **Pick a look**, upload, search, or try-on action. When the
-   selection is mostly one page image, WANT! crops its original-resolution
-   asset; otherwise it falls back to a cursor-hidden visible-tab screenshot.
-   Firefox internal pages, Add-ons Manager, and browser settings remain
-   restricted. See `docs/privacy-policy.md` for the full disclosure.
+### 3. Start the local API
 
-Press **Alt+W** on a regular webpage to open WANT!, then press **Pick a look**.
-The shortcut can be changed at `about:addons` under **Manage Extension
+```bash
+uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000
+```
+
+### 4. Load the Firefox extension
+
+1. Open `about:debugging#/runtime/this-firefox`.
+2. Select **Load Temporary Add-on**.
+3. Choose `apps/extension/dist/manifest.json`.
+4. Open WANT! from the toolbar and add a full-body photo.
+5. Visit a page with an outfit, press **Alt+W**, and choose **Pick a look**.
+
+The shortcut can be changed in `about:addons` under **Manage Extension
 Shortcuts**.
 
-Re-run `pnpm build` and reload the temporary add-on after frontend changes. The API
-reload command for development is:
+## Privacy by design
+
+WANT! acts only after a deliberate capture, upload, search, or try-on action.
+Personal photos, captures, provider payloads, and generated images are stored in
+ignored local `private-input/` and `private-output/` directories. Saved Looks
+and the local profile use SQLite. Read the full [privacy
+policy](docs/privacy-policy.md) for data handling and provider details.
+
+<details>
+<summary><strong>Development and code map</strong></summary>
+
+### Development server
 
 ```bash
 uv run uvicorn apps.api.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-## Verify
+Re-run `pnpm build` and reload the temporary add-on after frontend changes.
+
+### Verification
 
 ```bash
 uv run ruff check apps tests
@@ -78,44 +152,27 @@ pnpm typecheck
 pnpm build
 ```
 
-## Code map
+### Repository map
 
-- `apps/extension/src/background.ts` opens the sidebar, injects capture mode,
-  and stores a pending capture while the panel opens.
-- `apps/extension/src/content.ts` owns the on-page drag-selection overlay.
-- `apps/extension/src/sidepanel/capture.ts` turns the selected rectangle into a
-  crop, preferring the original page image when possible.
+- `apps/extension/src/background.ts` opens the sidebar, activates capture mode,
+  and carries a pending capture into the panel.
+- `apps/extension/src/content.ts` owns the on-page drag-selection experience.
+- `apps/extension/src/sidepanel/capture.ts` crops the selection, preferring the
+  original page image when possible.
 - `apps/extension/src/sidepanel/main.tsx` contains the sidebar screens and
-  user flow; `api.ts` is its only backend client and `types.ts` mirrors the API.
+  product flow; `api.ts` is its backend client and `types.ts` mirrors the API.
 - `apps/api/app/main.py` wires the FastAPI routes and process-lifetime services.
 - `openai_discovery.py`, `openai_prompts.py`, and `look_builder.py` inventory,
   search, normalize, validate product images, and assemble each product row.
-- `try_on.py` validates the chosen ranks and sequences supported garment regions
-  through `youcam.py`.
-- `database.py` and `media.py` store the local profile, saved snapshots, captures,
-  and final YouCam images.
-- `contracts.py` is the shared backend data contract; `tests/` protects API,
+- `try_on.py` validates the selected products and sequences supported garment
+  regions through `youcam.py`.
+- `database.py` and `media.py` store the local profile, saved looks, captures,
+  product media, and final YouCam images.
+- `contracts.py` defines the backend data contract; `tests/` protects API,
   normalization, selection, and YouCam behavior.
 
-The detailed product boundary lives in `docs/product-spec.md`; the accepted
-agentic runtime and measured provider results live in `docs/agentic-plan.md`.
+The detailed product behavior lives in
+[`docs/product-spec.md`](docs/product-spec.md). The accepted agentic runtime and
+provider evaluation live in [`docs/agentic-plan.md`](docs/agentic-plan.md).
 
-Personal photos, captures, provider payloads, and generated images remain under
-ignored `private-input/` and `private-output/` directories. API keys are never
-bundled into the extension.
-
-The runtime uses OpenAI visual inventory plus concurrent hosted image/text
-shopping, then sends the user's arrow-selected product combination to YouCam
-Clothes V3. There is no fallback provider, local product catalogue or local
-vector/embedding search path.
-
-## Current product boundary
-
-The implemented path returns one evidence-backed **Closest** outfit with up to
-three options per item. There are no alternate price tiers. Product links come
-directly from the OpenAI response; product images are retained only after the
-server can download and decode them, then served from private look-scoped media
-and uploaded to YouCam. Raw image results provide alternate URLs, and only rows
-with no usable product receive one broader retry. Known prices keep their listed currencies; a total
-appears only when all selected known prices share one currency. SQLite is
-retained only for the profile and Saved Looks.
+</details>
