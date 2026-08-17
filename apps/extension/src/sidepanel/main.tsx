@@ -36,7 +36,7 @@ function App() {
   const [setupOpen, setSetupOpen] = useState(false);
   const [photo, setPhoto] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState("Ready when you are");
+  const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [capture, setCapture] = useState<{ preview: string; sourceUrl: string | null } | null>(null);
   const [look, setLook] = useState<LookBuildResponse | null>(null);
@@ -52,7 +52,7 @@ function App() {
     setLook(null);
     setViewingSaved(false);
     setError(null);
-    setStatus("Ready when you are");
+    setStatus(null);
   }, []);
 
   const consumeCapture = useCallback(async (pending: PendingCapture) => {
@@ -297,7 +297,7 @@ function App() {
               onMe={openMe}
             />
           )}
-          {(error || (!look && !capture)) && (
+          {(error || (!look && !capture && status)) && (
             <div className={`status-line ${error ? "has-error" : ""}`}>
               <span className={`status-dot ${connection}`} />
               <span>{error ?? status}</span>
@@ -738,7 +738,7 @@ function ProductOptions({
               disabled={disabled}
               onClick={() => onSelect(index)}
             >
-              <ProductImage key={product.image_url} product={product} />
+              <ProductImage key={product.image_ref ?? product.image_url} product={product} />
             </button>
           </article>
           );
@@ -765,7 +765,7 @@ function MiniProduct({ product, label }: { product: ProductMatch; label?: string
 
 function ProductImage({ product }: { product: ProductMatch }) {
   const [failed, setFailed] = useState(false);
-  return failed ? <span className="image-unavailable">Image unavailable</span> : <img src={product.image_url} alt={product.title} onError={() => setFailed(true)} />;
+  return failed ? <span className="image-unavailable">Image unavailable</span> : <img src={mediaUrl(product.image_ref ?? product.image_url)} alt={product.title} onError={() => setFailed(true)} />;
 }
 
 function MeView({

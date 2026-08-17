@@ -73,7 +73,7 @@ pnpm build
 
 ## Deferred
 
-Delivery filtering, link revalidation, image caching/proxying, accessory VTO,
-authentication, social features, a product database, vector search, scrapers,
+Delivery filtering, product-page revalidation, accessory VTO, authentication,
+social features, a product database, vector search, scrapers,
 Redis, queues, workers and extra services remain out of scope unless a measured
 demo failure requires one.

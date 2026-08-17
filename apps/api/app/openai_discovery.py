@@ -19,6 +19,7 @@ from apps.api.app.openai_prompts import (
     INVENTORY_PROMPT_VERSION,
     SHOPPING_PROMPT,
     SHOPPING_PROMPT_VERSION,
+    SHOPPING_RETRY_PROMPT,
 )
 
 
@@ -82,6 +83,7 @@ class ItemTrace(StrictModel):
     web_search_calls: int
     usage: dict[str, int]
     result: ShoppingResult | None
+    image_alternates: dict[str, list[str]] = Field(default_factory=dict)
     error: str | None
 
 
@@ -91,7 +93,7 @@ class OpenAIDiscovery:
     model: str = "gpt-5.6-terra"
     reasoning_effort: str = "medium"
     concurrency: int = 8
-    search_context_size: Literal["low", "medium", "high"] = "low"
+    search_context_size: Literal["low", "medium", "high"] = "medium"
     service_tier: Literal["default", "fast"] = "default"
 
     def __post_init__(self) -> None:
@@ -136,12 +138,20 @@ class OpenAIDiscovery:
         self,
         image_path: Path,
         items: list[tuple[GarmentAnalysis, Path]],
+        exclusions: dict[str, list[str]] | None = None,
     ) -> list[ItemTrace]:
         semaphore = asyncio.Semaphore(max(1, self.concurrency))
+        exclusions = exclusions or {}
 
         async def bounded(item: tuple[GarmentAnalysis, Path]) -> ItemTrace:
             async with semaphore:
-                return await self._shop_item(image_path, *item)
+                garment, crop_path = item
+                return await self._shop_item(
+                    image_path,
+                    garment,
+                    crop_path,
+                    exclusions.get(garment.item_id),
+                )
 
         return list(await asyncio.gather(*(bounded(item) for item in items)))
 
@@ -150,6 +160,7 @@ class OpenAIDiscovery:
         image_path: Path,
         garment: GarmentAnalysis,
         crop_path: Path,
+        excluded_urls: list[str] | None = None,
     ) -> ItemTrace:
         started = time.perf_counter()
         try:
@@ -159,7 +170,9 @@ class OpenAIDiscovery:
                 text={"verbosity": "low"},
                 store=False,
                 service_tier=self.service_tier,
-                max_tool_calls=3,
+                max_tool_calls=5 if excluded_urls is not None else 3,
+                include=["web_search_call.results"],
+                tool_choice="required",
                 tools=[
                     {
                         "type": "web_search",
@@ -173,6 +186,18 @@ class OpenAIDiscovery:
                         "role": "user",
                         "content": [
                             {"type": "input_text", "text": SHOPPING_PROMPT},
+                            *(
+                                [
+                                    {
+                                        "type": "input_text",
+                                        "text": SHOPPING_RETRY_PROMPT
+                                        + "\nEXCLUDED URLS:\n"
+                                        + json.dumps(excluded_urls),
+                                    }
+                                ]
+                                if excluded_urls is not None
+                                else []
+                            ),
                             {
                                 "type": "input_text",
                                 "text": "TARGET ITEM:\n"
@@ -191,9 +216,7 @@ class OpenAIDiscovery:
             if result is None:
                 raise ValueError("OpenAI returned no parsed shopping result")
             if result.item_id != garment.item_id:
-                raise ValueError(
-                    f"OpenAI returned item {result.item_id!r} for {garment.item_id!r}"
-                )
+                raise ValueError(f"OpenAI returned item {result.item_id!r} for {garment.item_id!r}")
             return ItemTrace(
                 item_id=garment.item_id,
                 latency_seconds=time.perf_counter() - started,
@@ -201,6 +224,7 @@ class OpenAIDiscovery:
                 web_search_calls=_count_web_search_calls(response.output),
                 usage=_usage_dict(response.usage),
                 result=result,
+                image_alternates=_image_alternates(response.output),
                 error=None,
             )
         except (APIError, TypeError, ValueError) as error:
@@ -227,6 +251,34 @@ def _input_image(path: Path) -> dict[str, str]:
 
 def _count_web_search_calls(output: list[Any]) -> int:
     return sum(getattr(item, "type", None) == "web_search_call" for item in output)
+
+
+def _image_alternates(output: list[Any]) -> dict[str, list[str]]:
+    alternatives: dict[str, list[str]] = {}
+    for call in output:
+        if _field(call, "type") != "web_search_call":
+            continue
+        for result in _field(call, "results") or []:
+            if _field(result, "type") != "image_result":
+                continue
+            source = _field(result, "source_website_url")
+            if not source:
+                continue
+            urls = alternatives.setdefault(_comparison_url(str(source)), [])
+            for field in ("image_url", "thumbnail_url"):
+                value = _field(result, field)
+                if value and str(value) not in urls:
+                    urls.append(str(value))
+    return alternatives
+
+
+def _field(value: Any, name: str) -> Any:
+    return value.get(name) if isinstance(value, dict) else getattr(value, name, None)
+
+
+def _comparison_url(url: str) -> str:
+    parsed = urlparse(url)
+    return f"{parsed.scheme.lower()}://{parsed.netloc.lower()}{parsed.path.rstrip('/')}"
 
 
 def _usage_dict(usage: Any) -> dict[str, int]:

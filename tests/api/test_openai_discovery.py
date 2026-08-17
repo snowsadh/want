@@ -62,7 +62,7 @@ def test_price_and_currency_must_be_paired() -> None:
     raise AssertionError("a price without currency should be rejected")
 
 
-def test_item_request_uses_image_search_and_three_tool_call_cap(tmp_path: Path) -> None:
+def test_item_request_uses_raw_image_search_results(tmp_path: Path) -> None:
     image = tmp_path / "image.jpg"
     crop = tmp_path / "crop.jpg"
     Image.new("RGB", (20, 30), "black").save(image)
@@ -97,7 +97,19 @@ def test_item_request_uses_image_search_and_three_tool_call_cap(tmp_path: Path) 
             return SimpleNamespace(
                 id="response-1",
                 output_parsed=parsed,
-                output=[SimpleNamespace(type="web_search_call")],
+                output=[
+                    SimpleNamespace(
+                        type="web_search_call",
+                        results=[
+                            {
+                                "type": "image_result",
+                                "source_website_url": "https://example.com/black-fitted-top",
+                                "image_url": "https://images.example.com/top.jpg",
+                                "thumbnail_url": "https://images.example.com/top-thumb.jpg",
+                            }
+                        ],
+                    )
+                ],
                 usage=SimpleNamespace(input_tokens=10, output_tokens=5, total_tokens=15),
             )
 
@@ -108,8 +120,20 @@ def test_item_request_uses_image_search_and_three_tool_call_cap(tmp_path: Path) 
 
     assert trace.result == parsed
     assert trace.web_search_calls == 1
+    assert trace.image_alternates == {
+        "https://example.com/black-fitted-top": [
+            "https://images.example.com/top.jpg",
+            "https://images.example.com/top-thumb.jpg",
+        ]
+    }
     assert responses.kwargs["max_tool_calls"] == 3
-    assert "include" not in responses.kwargs
+    assert responses.kwargs["include"] == ["web_search_call.results"]
+    assert responses.kwargs["tool_choice"] == "required"
     tool = responses.kwargs["tools"][0]
+    assert tool["search_context_size"] == "medium"
     assert tool["search_content_types"] == ["image", "text"]
     assert tool["image_settings"] == {"max_results": 10, "caption": True}
+
+    asyncio.run(discovery._shop_item(image, garment, crop, []))
+    assert responses.kwargs["max_tool_calls"] == 5
+    assert "The first shopping pass produced no product" in str(responses.kwargs["input"])

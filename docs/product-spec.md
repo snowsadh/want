@@ -1,6 +1,6 @@
 # WANT! — Product Specification
 
-> Personal-use hackathon MVP. Last updated 2026-08-16.
+> Personal-use hackathon MVP. Last updated 2026-08-17.
 
 ## Promise
 
@@ -43,6 +43,7 @@ OpenAI inventory
     -> local schema, pair and duplicate checks + crops
     -> one concurrent OpenAI Responses shopper per item
     -> hosted image + text web search
+    -> one broader retry only for rows with no usable product image
     -> 0–3 ordered products or original-crop fallback
 ```
 
@@ -61,13 +62,18 @@ When equally useful images exist, prefer a model-worn image only when the target
 item is clearly isolated; otherwise use the clean product image so YouCam is not
 confused by other clothing.
 
-The application does not reopen product links, download/cache/proxy candidate
-images, run a second verifier or pad a row with weak products.
+The application does not reopen product pages or run a second semantic verifier.
+It downloads each returned product image once, keeps only images that are
+publicly reachable and decodable, and stores a private look-scoped JPEG for the
+UI and YouCam handoff. Canonical and thumbnail URLs from the raw image-search
+results are tried before a product is discarded. An empty row receives one
+broader same-category shopping retry. A row is never padded with an imageless
+or wrong-category product.
 
 ## YouCam rendering
 
-YouCam Clothes V3 is the hackathon centerpiece. The selected remote product
-image URL is passed directly as the reference:
+YouCam Clothes V3 is the hackathon centerpiece. The selected validated product
+image is uploaded through the Clothes V3 File API as the reference:
 
 ```text
 full_body -> shoes
@@ -78,14 +84,17 @@ upper_body -> lower_body -> shoes
 A full-body item replaces upper and lower. Clothes V3 accepts one reference per
 garment region, and a measured blouse-then-vest pass replaced the blouse details
 instead of preserving both independently selected products. The demo therefore
-uses single-layer outfits; layered items remain shopping recommendations and are
-rejected at try-on rather than presented as a faithful combination. Socks, leg
-warmers, tied waist layers and unsupported accessories also remain
-recommendations. Record and label only item IDs actually rendered.
+uses one best visible layer per region; other layered items remain shopping
+recommendations rather than being presented as a faithful combination. Socks, stockings, tights,
+hosiery, obvious underlayers, leg warmers, tied waist layers and unsupported
+accessories remain shopping-only recommendations. Record and label only item IDs
+actually rendered.
 
 Each completed YouCam stage is persisted locally and becomes the next stage
 source. The final persisted image—not a temporary provider URL—is shown and
-saved.
+saved. If a retailer blocks YouCam from downloading one selected reference,
+preserve any successful stages, keep that product shoppable but label it not in
+the preview, and fail the try-on only when no selected garment can be rendered.
 
 ## Results and saved looks
 
@@ -101,8 +110,9 @@ prices, links and source URL so reopening it does not silently change.
 - One local profile; SQLite stores profile metadata and saved snapshots.
 - Local files store private photos, captures and generated images.
 - API keys stay server-side and out of the extension, logs, fixtures and Git.
-- No product catalogue, image cache, vector index, Redis, worker, auth, social
-  layer, checkout or separate service.
+- No product catalogue, vector index, Redis, worker, auth, social layer,
+  checkout or separate service. Product images are retained only within their
+  private look snapshot.
 - Generated imagery is a visual preview, not a claim about physical fit.
 
 ## Demo acceptance

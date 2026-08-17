@@ -1,5 +1,5 @@
 INVENTORY_PROMPT_VERSION = "outfit-inventory-v1"
-SHOPPING_PROMPT_VERSION = "item-shopping-v1"
+SHOPPING_PROMPT_VERSION = "item-shopping-v2"
 
 
 INVENTORY_PROMPT = """
@@ -61,15 +61,24 @@ Every returned product must:
 
 Exclude resale and second-hand products, category or search-result pages, editorial or inspiration
 pages, products whose image does not show the item, and invented URLs, images, prices or
-availability.
+availability. Copy image and product-page URLs from the search results exactly; do not reconstruct
+or shorten them.
 
 When equally useful images exist for the same product, prefer one showing a model wearing the item
 only when the target item is clearly isolated and other clothing will not confuse virtual try-on.
 Otherwise prefer the clean product image. This is a preference, not a requirement.
 
-Use at most three web-search tool calls. Stop when three credible candidates have been found. Return
-zero, one or two products rather than adding weak matches. Order products from closest visual match
-to least close.
+An exact match is not required. For an ordinary, widely sold category, return at least one honest
+same-category closest match even when smaller details differ. Return zero only when no current
+same-category retail listing can be found after searching. Stop when three credible candidates have
+been found. Order products from closest visual match to least close.
 
 Return only the structured result.
+""".strip()
+
+
+SHOPPING_RETRY_PROMPT = """
+The first shopping pass produced no product with a usable image. Search again with broader wording.
+Prioritize a same-category visual match and a direct image result over exact-detail perfection. Do
+not return any excluded product or image URL listed below.
 """.strip()

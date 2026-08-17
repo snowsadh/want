@@ -89,7 +89,7 @@ pnpm build
   user flow; `api.ts` is its only backend client and `types.ts` mirrors the API.
 - `apps/api/app/main.py` wires the FastAPI routes and process-lifetime services.
 - `openai_discovery.py`, `openai_prompts.py`, and `look_builder.py` inventory,
-  search, normalize, crop, and assemble each product row.
+  search, normalize, validate product images, and assemble each product row.
 - `try_on.py` validates the chosen ranks and sequences supported garment regions
   through `youcam.py`.
 - `database.py` and `media.py` store the local profile, saved snapshots, captures,
@@ -112,8 +112,10 @@ vector/embedding search path.
 ## Current product boundary
 
 The implemented path returns one evidence-backed **Closest** outfit with up to
-three options per item. There are no alternate price tiers. Product/image URLs
-come directly from the OpenAI response without a second HTTP check or image
-cache. Known prices keep their listed currencies; a total appears only when all
-selected known prices share one currency. SQLite is retained only for the
-profile and Saved Looks.
+three options per item. There are no alternate price tiers. Product links come
+directly from the OpenAI response; product images are retained only after the
+server can download and decode them, then served from private look-scoped media
+and uploaded to YouCam. Raw image results provide alternate URLs, and only rows
+with no usable product receive one broader retry. Known prices keep their listed currencies; a total
+appears only when all selected known prices share one currency. SQLite is
+retained only for the profile and Saved Looks.

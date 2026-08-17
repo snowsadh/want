@@ -61,6 +61,7 @@ export interface ProductMatch {
   price_minor: number | null;
   currency: string | null;
   image_url: string;
+  image_ref?: string | null;
   product_url: string;
 }
 

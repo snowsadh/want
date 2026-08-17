@@ -12,16 +12,19 @@ reference image
     -> OpenAI inventory of every distinct visible wearable
     -> local schema, pair and duplicate checks + item crops
     -> one concurrent OpenAI shopping request per item
-    -> 0–3 ranked products per item
+    -> one broader retry only for rows with no usable image
+    -> 0–3 ranked products with validated local image copies per item
     -> default or user-selected product
     -> YouCam: full body -> shoes
        OR upper body -> lower body -> shoes
     -> final image + product links for every detected item
 ```
 
-The MVP does **not** add a second verification call, HTTP link checker, image
-download/cache/proxy, product database, provider toggle or background workflow.
-If OpenAI finds no credible product, the original crop remains as an unlinked
+The MVP does **not** add a separate semantic verifier, product-page checker,
+product database, provider toggle or background workflow. It validates and
+preserves each returned image once because retailer CDNs proved unreliable for
+both the UI and YouCam. Only a row with no usable product receives one broader
+shopper retry. If that also fails, the original crop remains as an unlinked
 reference.
 
 ## OpenAI requests
@@ -151,7 +154,7 @@ FULL REFERENCE    original image for category/layering ambiguity
 ```json
 {
   "type": "web_search",
-  "search_context_size": "low",
+  "search_context_size": "medium",
   "search_content_types": ["image", "text"],
   "image_settings": {"max_results": 10, "caption": true}
 }
@@ -161,12 +164,21 @@ Also cap hosted search calls:
 
 ```json
 {
-  "max_tool_calls": 3
+  "max_tool_calls": 3,
+  "tool_choice": "required",
+  "include": ["web_search_call.results"]
 }
 ```
 
-The runtime consumes the selected structured `image_url`; it does not request or
-parse raw search-result payloads, fetch the image, or run another validation pass.
+Only the broader retry raises `max_tool_calls` to five. The normal concurrent
+pass stays capped at three so obvious products do not spend time on unnecessary
+search steps.
+
+The runtime consumes the structured `image_url` and raw image results. For a
+selected product page, it tries the structured URL, then matching canonical and
+thumbnail URLs from `web_search_call.results`. It downloads and decodes the
+first usable image before exposing the product. Rows still empty after this
+receive one broader retry that excludes the failed URLs.
 
 ### Final shopping prompt
 
@@ -203,24 +215,27 @@ Every returned product must:
 
 Exclude resale and second-hand products, category or search-result pages,
 editorial or inspiration pages, products whose image does not show the item,
-and invented URLs, images, prices or availability.
+and invented URLs, images, prices or availability. Copy image and product-page
+URLs from the search results exactly; do not reconstruct or shorten them.
 
 When equally useful images exist for the same product, prefer one showing a
 model wearing the item only when the target item is clearly isolated and other
 clothing will not confuse virtual try-on. Otherwise prefer the clean product
 image. This is a preference, not a requirement.
 
-Use at most three web-search tool calls. Stop when three credible candidates
-have been found. Return zero, one or two products rather than adding weak
-matches. Order products from closest visual match to least close.
+An exact match is not required. For an ordinary, widely sold category, return
+at least one honest same-category closest match even when smaller details differ.
+Return zero only when no current same-category retail listing can be found after
+searching. Stop when three credible candidates have been found. Order products
+from closest visual match to least close.
 
 Return only the structured result.
 ```
 
-A candidate is credible only when its category matches, its image shows the
-linked product and color variant, its defining visual attributes are close, and
-it has no major conflict that makes the outfit read as a different design.
-Give up rather than returning a broad aesthetic or keyword-only match.
+A candidate is credible when its category matches, its image shows the linked
+product and color variant, and its defining visual attributes are reasonably
+close. Minor-detail differences are acceptable for a labelled Closest match;
+wrong-category and broad aesthetic-only matches are not.
 
 ### Shopping schema
 
@@ -268,23 +283,22 @@ both nullable in Python and TypeScript. Preserve a known listed price in its
 original currency; do not convert or invent one. Show a total only when every
 selected product has a known price in the same currency; otherwise hide it.
 
-Use returned `image_url` values directly in `<img>` and returned `product_url`
-values for card links. A browser image error gets a visible placeholder; the app
-does not silently replace, download, proxy or re-check the result.
+Keep returned `product_url` values for card links. Download each returned
+`image_url` once, reject inaccessible or invalid images, and expose the private
+look-scoped copy to the side panel so every retained product has a stable image.
 
 ## YouCam handoff
 
-Reuse `YouCamClient.render(reference_url=...)`, which already supports remote
-garment references. Keep the user photo and generated stage outputs as local
-paths; pass the selected product image as `reference_url`. Do not download it
-first.
+Reuse `YouCamClient.render(reference=...)`. Keep the user photo, validated
+product images and generated stage outputs as local paths; upload the selected
+product reference through YouCam's Clothes V3 File API.
 
 Render at most one item per YouCam category. A real blouse-then-vest test made a
 plausible layered image but replaced the chosen blouse details, so sequential
 same-slot rendering is not a faithful combination. Keep layered items as product
-rows, reject their try-on, and use single-layer outfits for the demo. Socks and
-leg warmers remain recommendations rather than shoe references. Never render an
-unmatched crop.
+rows, render the best visible outer layer, and label the others as absent from
+the preview. Socks and leg warmers remain recommendations rather than shoe
+references. Never render an unmatched crop.
 
 ```text
 if full_body selected:  user photo -> full_body -> shoes
@@ -301,9 +315,9 @@ remain recommendations and must never be labelled as present in the preview.
 - `openai_discovery.py` owns raw Responses inventory and concurrent shopping.
 - `openai_prompts.py` contains only the two prompts above.
 - `look_builder.py` performs local normalization/crops and assembles one row per
-  item.
-- `try_on.py` validates selected ranks and passes remote product URLs directly
-  through YouCam's existing `reference_url` input.
+  item after preserving only reachable, decodable product images.
+- `try_on.py` validates selected ranks and uploads the selected local product
+  references to YouCam.
 - The side panel uses wraparound arrows, defaults to rank one, and sends/saves
   the current combination.
 - Gemini, SerpAPI, the visual verifier, Agents SDK and completion/score contracts
@@ -322,10 +336,10 @@ part of final rehearsal.
 | Inventory request or schema fails twice | One clear retryable analysis error. |
 | One item shopper fails or finds nothing credible | That item's original crop; other items continue. |
 | Price is unavailable | No price; never an estimate or zero-price label. |
-| Product image fails in the browser | Explicit image placeholder; keep the link unchanged. |
-| YouCam rejects a remote selected image | Fail that render clearly; add a proxy only after reproducing this failure. |
+| Product image cannot be downloaded or decoded | Drop that product before display; use another ranked option or the original crop. |
+| A legacy look gives YouCam an unavailable retailer image | Skip that garment, preserve completed stages and label it not in preview. Fail clearly if no stage succeeds. |
 
 No second inventory analysis, shortlist verifier, deterministic commerce check,
-cache, proxy, retailer scraper, delivery filtering, accessory VTO, social feature,
-vector search, Redis, queue or worker belongs in this MVP without a measured
-failure that requires it.
+product-page scraper, delivery filtering, accessory VTO, social feature, vector
+search, Redis, queue or worker belongs in this MVP without a measured failure
+that requires it.

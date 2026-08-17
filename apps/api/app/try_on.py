@@ -65,27 +65,63 @@ class TryOnManager:
             source = self._media_path(profile_ref)
             job_dir = self.media_dir / "looks" / look_id / "try-on" / job_id
             job_dir.mkdir(parents=True, exist_ok=True)
-            rendered_item_ids = []
-            for index, (item_id, slot, reference_url) in enumerate(steps, start=1):
+            rendered_item_ids: list[str] = []
+            unavailable_item_ids: list[str] = []
+            for item_id, slot, reference_url in steps:
                 self._update(job_id, stage=f"applying_{slot.value}")
-                result = self.client.render(
-                    source,
-                    slot.value,
-                    reference_url=reference_url,
-                )
-                destination = job_dir / f"stage-{index}.jpg"
+                try:
+                    if reference_url.startswith("/media/"):
+                        result = self.client.render(
+                            source,
+                            slot.value,
+                            reference=self._media_path(reference_url),
+                        )
+                    else:
+                        result = self.client.render(
+                            source,
+                            slot.value,
+                            reference_url=reference_url,
+                        )
+                except RuntimeError as error:
+                    if "error_download_image" not in str(error):
+                        raise
+                    unavailable_item_ids.append(item_id)
+                    continue
+                destination = job_dir / f"stage-{len(rendered_item_ids) + 1}.jpg"
                 destination.write_bytes(result.image_bytes)
                 source = destination
                 rendered_item_ids.append(item_id)
+            if not rendered_item_ids:
+                raise RuntimeError(
+                    "YouCam could not download any selected retailer image. "
+                    "Choose another product option and try again."
+                )
             result_ref = f"/media/{source.relative_to(self.media_dir).as_posix()}"
+            unavailable_count = len(unavailable_item_ids)
+            warning = (
+                f"{unavailable_count} selected piece"
+                f"{'s' if unavailable_count != 1 else ''} stayed out of the preview because "
+                f"{'their' if unavailable_count != 1 else 'its'} retailer image was unavailable "
+                "to YouCam."
+                if unavailable_count
+                else None
+            )
             self._update(
                 job_id,
                 status=TryOnStatus.SUCCESS,
                 stage="complete",
                 result_ref=result_ref,
+                error=warning,
                 rendered_garment_item_ids=rendered_item_ids,
             )
-        except (httpx.HTTPError, OSError, RuntimeError, TimeoutError, ValueError, KeyError) as error:
+        except (
+            httpx.HTTPError,
+            OSError,
+            RuntimeError,
+            TimeoutError,
+            ValueError,
+            KeyError,
+        ) as error:
             self._update(
                 job_id,
                 status=TryOnStatus.FAILED,
@@ -105,7 +141,7 @@ class TryOnManager:
             raise ValueError(f"Unknown selected item: {min(unknown)}")
 
         garments = {garment.item_id: garment for garment in look.result.analysis.garments}
-        references: dict[BodySlot, list[tuple[str, str]]] = {}
+        references: dict[BodySlot, list[tuple[str, str, GarmentAnalysis]]] = {}
         for item_id, row in rows.items():
             garment = garments[item_id]
             if not _is_renderable(garment) or not row.products:
@@ -114,28 +150,29 @@ class TryOnManager:
             if not 0 <= selected < len(row.products):
                 raise ValueError(f"Selected rank is out of range for {item_id}")
             references.setdefault(garment.body_slot, []).append(
-                (item_id, str(row.products[selected].image_url))
+                (
+                    item_id,
+                    row.products[selected].image_ref or str(row.products[selected].image_url),
+                    garment,
+                )
             )
 
-        if any(len(items) > 1 for items in references.values()) or (
-            BodySlot.FULL_BODY in references
-            and (BodySlot.UPPER_BODY in references or BodySlot.LOWER_BODY in references)
-        ):
-            raise ValueError(
-                "Layered clothing is not supported reliably; choose a single-layer look"
-            )
+        chosen = {
+            slot: max(items, key=lambda item: _render_priority(item[2]))
+            for slot, items in references.items()
+        }
 
-        if BodySlot.FULL_BODY in references:
-            item_id, reference = references[BodySlot.FULL_BODY][0]
+        if BodySlot.FULL_BODY in chosen:
+            item_id, reference, _garment = chosen[BodySlot.FULL_BODY]
             steps = [(item_id, BodySlot.FULL_BODY, reference)]
-            if BodySlot.SHOES in references:
-                shoe_id, shoe_reference = references[BodySlot.SHOES][0]
+            if BodySlot.SHOES in chosen:
+                shoe_id, shoe_reference, _garment = chosen[BodySlot.SHOES]
                 steps.append((shoe_id, BodySlot.SHOES, shoe_reference))
             return steps
         return [
-            (references[slot][0][0], slot, references[slot][0][1])
+            (chosen[slot][0], slot, chosen[slot][1])
             for slot in (BodySlot.UPPER_BODY, BodySlot.LOWER_BODY, BodySlot.SHOES)
-            if slot in references
+            if slot in chosen
         ]
 
     def _media_path(self, ref: str) -> Path:
@@ -174,7 +211,10 @@ def _is_renderable(garment: GarmentAnalysis) -> bool:
     if garment.body_slot is BodySlot.ACCESSORY or _is_tied_layer(garment):
         return False
     category = garment.category.casefold().replace("-", " ")
-    if any(word in category for word in ("sock", "leg warmer")):
+    if any(
+        word in category
+        for word in ("sock", "stocking", "tights", "hosiery", "leg warmer", "underlayer")
+    ):
         return False
     return garment.body_slot in {
         BodySlot.UPPER_BODY,
@@ -182,3 +222,16 @@ def _is_renderable(garment: GarmentAnalysis) -> bool:
         BodySlot.FULL_BODY,
         BodySlot.SHOES,
     }
+
+
+def _render_priority(garment: GarmentAnalysis) -> tuple[int, float, int]:
+    """Prefer an outer visible layer when Clothes V3 can render only one per slot."""
+    description = " ".join((garment.category, garment.silhouette, *garment.details)).casefold()
+    outer_layer = int(
+        any(
+            word in description
+            for word in ("coat", "jacket", "blazer", "cardigan", "overshirt", "outerwear", "vest")
+        )
+    )
+    ymin, xmin, ymax, xmax = garment.box_2d
+    return outer_layer, garment.visible_fraction, (ymax - ymin) * (xmax - xmin)

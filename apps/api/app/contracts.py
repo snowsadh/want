@@ -89,6 +89,7 @@ class ProductMatch(StrictModel):
     retailer: str
     product_url: HttpUrl
     image_url: HttpUrl
+    image_ref: str | None = None
     price_minor: int | None = Field(ge=0)
     currency: str | None
 

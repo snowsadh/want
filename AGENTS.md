@@ -38,8 +38,10 @@ OpenAI visual inventory
     -> local pair/deduplication checks and item crops
     -> one concurrent OpenAI Responses shopper per distinct item
     -> hosted image + text web search, up to three products per item
+    -> validate and preserve reachable product images per look
+    -> retry only rows with no usable product image
     -> user-selected combination
-    -> YouCam full-body or upper/lower, then shoes
+    -> upload selected references to YouCam full-body or upper/lower, then shoes
 ```
 
 The private local product catalogue and its embedding/ONNX rankers were removed
@@ -52,6 +54,12 @@ items, 38 returned products, two honest fallbacks, 34.7 seconds mean latency and
 49.1 seconds maximum latency. A real YouCam run accepted a returned remote image
 URL directly and completed in 43.3 seconds. Gemini, SerpAPI, the visual verifier
 and Agents SDK were removed after this gate passed.
+
+On 2026-08-17, real retailer CDNs produced missing UI images and YouCam
+`error_download_image` failures. Product images are now validated once and kept
+as private look-scoped media; raw image-search URLs provide fallbacks and one
+broader shopping retry repairs empty rows. This is not a product catalogue or
+ranking store.
 
 ## MVP boundaries
 
