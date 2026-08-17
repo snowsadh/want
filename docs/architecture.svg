@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">WANT! agentic architecture</title>
+  <desc id="desc">The backend identifies every clothing item, prepares one item task per record, searches for products in parallel, validates product links and images, retries only failed rows, and sends the user's selected products through YouCam Clothes V3.</desc>
+  <defs>
+    <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#315CFF"/></marker>
+    <marker id="pink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#FF4F70"/></marker>
+    <marker id="ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 10 5 0 10Z" fill="#17191C"/></marker>
+    <clipPath id="proof"><rect x="1230" y="192" width="292" height="400" rx="8"/></clipPath>
+    <style>
+      text { font-family: Arial, sans-serif; fill: #17191C; }
+      .title { font-size: 35px; font-weight: 750; }
+      .node { font-size: 18px; font-weight: 700; }
+      .body { font-size: 13.5px; fill: #697080; }
+      .owner { font-size: 12.5px; font-weight: 700; fill: #315CFF; }
+      .owner-dark { font-size: 12.5px; font-weight: 700; fill: #AFC0FF; }
+      .owner-pink { font-size: 12.5px; font-weight: 700; fill: #FF4F70; }
+      .tag { font-family: "Courier New", monospace; font-size: 9px; letter-spacing: 1px; }
+      .white { fill: #FFFFFF; }
+      .soft { fill: #C8CBD4; }
+      .blue-text { fill: #315CFF; }
+      .pink-text { fill: #FF4F70; }
+      .light-blue { fill: #98ACFF; }
+      .b { stroke: #315CFF; stroke-width: 2.6; fill: none; marker-end: url(#blue); }
+      .p { stroke: #FF4F70; stroke-width: 2.6; fill: none; marker-end: url(#pink); }
+      .i { stroke: #17191C; stroke-width: 2.2; fill: none; marker-end: url(#ink); }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F7F8FC"/>
+  <path d="M0 0H1600V10H0Z" fill="#315CFF"/><path d="M1460 0H1600V10H1460Z" fill="#FF4F70"/>
+  <text x="45" y="55" class="title">WANT! agentic architecture</text>
+  <text x="45" y="83" class="body" font-size="15">The browser extension sends the capture to FastAPI, which coordinates OpenAI inventory, parallel shopping agents, product validation, YouCam rendering, and local persistence.</text>
+
+  <!-- top decomposition -->
+  <g>
+    <rect x="45" y="125" width="235" height="125" rx="10" fill="#FFFFFF" stroke="#17191C" stroke-width="2"/>
+    <text x="65" y="158" class="node">Captured outfit</text><text x="65" y="184" class="owner">Chrome or Firefox extension</text><text x="65" y="214" class="body">Selected on a webpage</text><text x="65" y="235" class="body">or uploaded as an image</text>
+
+    <rect x="340" y="125" width="280" height="125" rx="10" fill="#FFFFFF" stroke="#315CFF" stroke-width="2.5"/>
+    <text x="360" y="158" class="node">Identify all clothing items</text><text x="360" y="184" class="owner">OpenAI Responses API</text><text x="360" y="214" class="body">Returns each item's crop boundary</text><text x="360" y="235" class="body">and visual description</text>
+
+    <rect x="680" y="125" width="300" height="125" rx="10" fill="#17191C"/>
+    <text x="700" y="158" class="node white">Validate and prepare the items</text><text x="700" y="184" class="owner-dark">FastAPI · LookBuilder · Pillow</text><text x="700" y="214" class="body soft">Checks records, removes duplicates,</text><text x="700" y="235" class="body soft">and creates one crop per item</text>
+
+    <path d="M280 188H340" class="b"/><path d="M620 188H680" class="b"/>
+  </g>
+
+  <!-- real evidence inset -->
+  <g>
+    <rect x="1200" y="125" width="352" height="480" rx="12" fill="#FFFFFF" stroke="#17191C" stroke-width="2"/>
+    <text x="1225" y="155" class="node">Example inventory output</text>
+    <text x="1225" y="180" class="owner">OpenAI Responses API</text>
+    <image x="1230" y="192" width="292" height="400" preserveAspectRatio="xMidYMid slice" clip-path="url(#proof)" href="assets/openai-inventory-output.png" xlink:href="assets/openai-inventory-output.png"/>
+    <rect x="1230" y="192" width="292" height="400" rx="8" fill="none" stroke="#DFE3EB" stroke-width="2"/>
+  </g>
+
+  <!-- fan-out container -->
+  <g>
+    <rect x="165" y="315" width="895" height="255" rx="14" fill="#EDF0FF" stroke="#315CFF" stroke-width="2.5"/>
+    <text x="190" y="345" class="node">Search for matching products in parallel</text>
+    <text x="190" y="371" class="owner">FastAPI · OpenAIDiscovery · asyncio · OpenAI Responses API</text>
+    <text x="190" y="395" class="body">One task runs per item, with up to eight tasks at once. Each task receives the item crop and the full outfit.</text>
+    <text x="190" y="417" class="body">The Responses API can make up to three hosted image and text searches, then returns 0–3 ranked products.</text>
+
+    <path d="M830 250V288H1080V430H948M278 430H948M278 430V440M500 430V440M724 430V440M948 430V440" fill="none" stroke="#315CFF" stroke-width="2.5"/>
+
+    <g>
+      <rect x="190" y="440" width="176" height="105" rx="9" fill="#FFFFFF" stroke="#315CFF" stroke-width="2"/>
+      <text x="208" y="470" class="node">Red corset top</text><text x="208" y="496" class="owner">Responses + web search</text><text x="208" y="524" class="body">0–3 ranked products</text>
+      <rect x="412" y="440" width="176" height="105" rx="9" fill="#FFFFFF" stroke="#315CFF" stroke-width="2"/>
+      <text x="430" y="470" class="node">White mini skirt</text><text x="430" y="496" class="owner">Responses + web search</text><text x="430" y="524" class="body">0–3 ranked products</text>
+      <rect x="636" y="440" width="176" height="105" rx="9" fill="#FFFFFF" stroke="#315CFF" stroke-width="2"/>
+      <text x="654" y="470" class="node">Knee-high boots</text><text x="654" y="496" class="owner">Responses + web search</text><text x="654" y="524" class="body">0–3 ranked products</text>
+      <rect x="860" y="440" width="176" height="105" rx="9" fill="#FFFFFF" stroke="#FF4F70" stroke-width="2"/>
+      <text x="878" y="470" class="node">Heart necklace</text><text x="878" y="496" class="owner-pink">Responses + web search</text><text x="878" y="524" class="body">0–3 ranked products</text>
+    </g>
+  </g>
+
+  <!-- merge / recovery -->
+  <g>
+    <path d="M278 545V575M500 545V575M724 545V575M948 545V575M278 575H948M613 575V595" fill="none" stroke="#315CFF" stroke-width="2.5"/>
+    <rect x="365" y="595" width="496" height="150" rx="10" fill="#FFFFFF" stroke="#17191C" stroke-width="2.5"/>
+    <text x="387" y="625" class="node">Validate the product results</text><text x="387" y="651" class="owner">FastAPI · LookBuilder · httpx · Pillow</text><text x="387" y="677" class="body">Downloads and decodes product images, keeps direct store links,</text><text x="387" y="699" class="body">and saves stable look-scoped copies for the interface and YouCam.</text>
+    <path d="M861 708H1038V545" class="p" stroke-dasharray="7 6"/>
+    <text x="387" y="723" class="body pink-text">If a row has no usable image, retry only that item once with a broader search.</text>
+  </g>
+
+  <!-- action path -->
+  <g>
+    <rect x="85" y="780" width="255" height="105" rx="10" fill="#FFFFFF" stroke="#315CFF" stroke-width="2.5"/>
+    <text x="105" y="811" class="node">Select one product per item</text><text x="105" y="837" class="owner">React side panel → FastAPI</text><text x="105" y="861" class="body">POST /api/try-ons with the</text><text x="105" y="880" class="body">selected rank for every item</text>
+
+    <rect x="420" y="780" width="310" height="105" rx="10" fill="#17191C"/>
+    <text x="440" y="811" class="node white">Render the selected apparel</text><text x="440" y="837" class="owner-pink">TryOnManager → YouCam Clothes V3</text><text x="440" y="861" class="body soft">Full body → shoes, or upper → lower → shoes.</text><text x="440" y="880" class="body soft">Each result becomes the next stage input.</text>
+
+    <rect x="810" y="780" width="300" height="105" rx="10" fill="#FFFFFF" stroke="#FF4F70" stroke-width="2.5"/>
+    <text x="830" y="811" class="node">Return the completed look</text><text x="830" y="837" class="owner-pink">FastAPI · SQLite · private media</text><text x="830" y="861" class="body">Final image, rendered item IDs, product links,</text><text x="830" y="880" class="body">and the saved-look snapshot</text>
+
+    <path d="M613 745V760H212.5V780" class="b"/><path d="M340 832H420" class="p"/><path d="M730 832H810" class="p"/>
+  </g>
+
+</svg>
